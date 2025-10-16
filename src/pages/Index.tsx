@@ -1,11 +1,119 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useEffect } from "react";
+import JournalInput from "@/components/JournalInput";
+import MoodCalendar from "@/components/MoodCalendar";
+import { saveEntry, getEntries, deleteEntry, JournalEntry } from "@/utils/localStorage";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    setEntries(getEntries());
+  }, []);
+
+  const handleSubmit = async (journalText: string, manualMood?: string) => {
+    setIsAnalyzing(true);
+
+    try {
+      let mood: string;
+      let response: string;
+
+      if (manualMood) {
+        // Use manual mood override
+        mood = manualMood;
+        response = "Thank you for sharing. Your feelings are important.";
+      } else {
+        // Call AI to analyze mood
+        const { data, error } = await supabase.functions.invoke('analyze-mood', {
+          body: { journalText }
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        if (!data || !data.mood || !data.response) {
+          throw new Error("Invalid response from mood analysis");
+        }
+
+        mood = data.mood;
+        response = data.response;
+      }
+
+      const newEntry: JournalEntry = {
+        id: crypto.randomUUID(),
+        date: new Date().toISOString().split('T')[0],
+        journalText,
+        mood,
+        response,
+      };
+
+      saveEntry(newEntry);
+      setEntries(getEntries());
+
+      toast({
+        title: "Entry Saved! ✨",
+        description: `Mood detected: ${mood}`,
+      });
+
+    } catch (error: any) {
+      console.error('Error analyzing mood:', error);
+      
+      let errorMessage = "Couldn't analyze that. Please try again.";
+      
+      if (error.message?.includes('Rate limit')) {
+        errorMessage = "Too many requests. Please wait a moment and try again.";
+      } else if (error.message?.includes('credits')) {
+        errorMessage = "AI usage limit reached. Please try manual mood selection.";
+      }
+      
+      toast({
+        title: "Analysis Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleDeleteEntry = (date: string) => {
+    deleteEntry(date);
+    setEntries(getEntries());
+    toast({
+      title: "Entry Deleted",
+      description: "Your journal entry has been removed.",
+    });
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header */}
+        <header className="text-center mb-12 animate-fade-in">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-3">
+            Mind Mirror 🪞
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            Reflect on Your Day
+          </p>
+        </header>
+
+        {/* Main Content */}
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Left Panel - Journal Input */}
+          <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-xl">
+            <JournalInput onSubmit={handleSubmit} isAnalyzing={isAnalyzing} />
+          </div>
+
+          {/* Right Panel - Mood Summary */}
+          <div>
+            <MoodCalendar entries={entries} onDeleteEntry={handleDeleteEntry} />
+          </div>
+        </div>
       </div>
     </div>
   );

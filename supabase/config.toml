@@ -1,0 +1,4 @@
+project_id = "ftzxsyumlpfxttlvbhlp"
+
+[functions.analyze-mood]
+verify_jwt = false
