@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,6 +15,7 @@ const JournalInput = ({ onSubmit, isAnalyzing }: JournalInputProps) => {
   const [journalText, setJournalText] = useState("");
   const [manualMood, setManualMood] = useState<string>("");
   const [isRecording, setIsRecording] = useState(false);
+  const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
 
   const startRecording = async () => {
@@ -40,12 +41,15 @@ const JournalInput = ({ onSubmit, isAnalyzing }: JournalInputProps) => {
           variant: "destructive",
         });
         setIsRecording(false);
+        recognitionRef.current = null;
       };
 
       recognition.onend = () => {
         setIsRecording(false);
+        recognitionRef.current = null;
       };
 
+      recognitionRef.current = recognition;
       recognition.start();
       setIsRecording(true);
     } catch (error) {
@@ -58,6 +62,10 @@ const JournalInput = ({ onSubmit, isAnalyzing }: JournalInputProps) => {
   };
 
   const stopRecording = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
     setIsRecording(false);
   };
 
