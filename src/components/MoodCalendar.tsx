@@ -159,21 +159,21 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
 
               return (
                 <div key={date.toISOString()} className="relative">
-                  <HoverCard openDelay={300}>
-                    <HoverCardTrigger asChild>
-                      <Dialog 
-                        onOpenChange={(open) => {
-                          if (open && dayEntries.length > 0) {
-                            setSelectedDate(date);
-                            setSelectedEntries(dayEntries);
-                            setCurrentEntryIndex(0);
-                          } else if (!open) {
-                            setSelectedDate(null);
-                            setSelectedEntries([]);
-                            setCurrentEntryIndex(0);
-                          }
-                        }}
-                      >
+                  <Dialog 
+                    onOpenChange={(open) => {
+                      if (open && dayEntries.length > 0) {
+                        setSelectedDate(date);
+                        setSelectedEntries(dayEntries);
+                        setCurrentEntryIndex(0);
+                      } else if (!open) {
+                        setSelectedDate(null);
+                        setSelectedEntries([]);
+                        setCurrentEntryIndex(0);
+                      }
+                    }}
+                  >
+                    <HoverCard openDelay={300}>
+                      <HoverCardTrigger asChild>
                         <DialogTrigger asChild>
                           <button
                             className={`
@@ -191,107 +191,107 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
                             )}
                           </button>
                         </DialogTrigger>
-                        {selectedEntries.length > 0 && selectedDate && isSameDay(date, selectedDate) && (
-                          <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
-                            <DialogHeader className="pb-4">
-                              <DialogTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                <span className="text-base sm:text-lg">{format(selectedDate, "MMMM d, yyyy")}</span>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-3xl">{moodEmojis[selectedEntries[currentEntryIndex].mood]}</span>
-                                  {selectedEntries.length > 1 && (
-                                    <span className="text-sm text-muted-foreground">
-                                      {currentEntryIndex + 1}/{selectedEntries.length}
-                                    </span>
-                                  )}
-                                </div>
-                              </DialogTitle>
-                            </DialogHeader>
-
-                            <div className="space-y-4">
+                      </HoverCardTrigger>
+                      {firstEntry && (
+                        <HoverCardContent className="w-[90vw] sm:w-80 animate-fade-in z-50" side="top">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xl sm:text-2xl">{moodEmojis[firstEntry.mood]}</span>
+                              <span className="font-medium text-xs sm:text-sm">{format(date, "MMM d, yyyy")}</span>
+                            </div>
+                            <div className="p-2 sm:p-3 bg-accent/20 rounded-lg">
+                              <p className="text-xs sm:text-sm text-foreground/90 italic line-clamp-3">
+                                {firstEntry.reflection}
+                              </p>
+                            </div>
+                            {dayEntries.length > 1 && (
+                              <p className="text-xs text-muted-foreground">
+                                +{dayEntries.length - 1} more {dayEntries.length === 2 ? 'entry' : 'entries'}
+                              </p>
+                            )}
+                          </div>
+                        </HoverCardContent>
+                      )}
+                    </HoverCard>
+                    {selectedEntries.length > 0 && selectedDate && isSameDay(date, selectedDate) && (
+                      <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
+                        <DialogHeader className="pb-4">
+                          <DialogTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <span className="text-base sm:text-lg">{format(selectedDate, "MMMM d, yyyy")}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-3xl">{moodEmojis[selectedEntries[currentEntryIndex].mood]}</span>
                               {selectedEntries.length > 1 && (
-                                <div className="flex gap-2 justify-center">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setCurrentEntryIndex(Math.max(0, currentEntryIndex - 1))}
-                                    disabled={currentEntryIndex === 0}
-                                    className="min-h-[44px]"
-                                  >
-                                    Previous
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setCurrentEntryIndex(Math.min(selectedEntries.length - 1, currentEntryIndex + 1))}
-                                    disabled={currentEntryIndex === selectedEntries.length - 1}
-                                    className="min-h-[44px]"
-                                  >
-                                    Next
-                                  </Button>
-                                </div>
+                                <span className="text-sm text-muted-foreground">
+                                  {currentEntryIndex + 1}/{selectedEntries.length}
+                                </span>
                               )}
+                            </div>
+                          </DialogTitle>
+                        </DialogHeader>
 
-                              <div>
-                                <h4 className="font-medium text-sm text-muted-foreground mb-2">Your Entry</h4>
-                                <p className="text-foreground whitespace-pre-wrap text-sm sm:text-base leading-relaxed">
-                                  {selectedEntries[currentEntryIndex].entry_text}
-                                </p>
-                              </div>
-
-                              <div className="p-3 sm:p-4 bg-accent/20 rounded-lg">
-                                <h4 className="font-medium text-sm text-muted-foreground mb-2">Reflection</h4>
-                                <p className="text-foreground italic text-sm sm:text-base leading-relaxed">
-                                  {selectedEntries[currentEntryIndex].reflection}
-                                </p>
-                              </div>
-
+                        <div className="space-y-4">
+                          {selectedEntries.length > 1 && (
+                            <div className="flex gap-2 justify-center">
                               <Button
-                                variant="destructive"
+                                variant="outline"
                                 size="sm"
-                                onClick={() => {
-                                  const entryToDelete = selectedEntries[currentEntryIndex];
-                                  onDeleteEntry(entryToDelete.id);
-                                  const newEntries = selectedEntries.filter((_, idx) => idx !== currentEntryIndex);
-                                  if (newEntries.length > 0) {
-                                    setSelectedEntries(newEntries);
-                                    setCurrentEntryIndex(Math.min(currentEntryIndex, newEntries.length - 1));
-                                  } else {
-                                    setSelectedDate(null);
-                                    setSelectedEntries([]);
-                                    setCurrentEntryIndex(0);
-                                  }
-                                }}
-                                className="w-full min-h-[44px] text-base"
+                                onClick={() => setCurrentEntryIndex(Math.max(0, currentEntryIndex - 1))}
+                                disabled={currentEntryIndex === 0}
+                                className="min-h-[44px]"
                               >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete Entry
+                                Previous
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentEntryIndex(Math.min(selectedEntries.length - 1, currentEntryIndex + 1))}
+                                disabled={currentEntryIndex === selectedEntries.length - 1}
+                                className="min-h-[44px]"
+                              >
+                                Next
                               </Button>
                             </div>
-                          </DialogContent>
-                        )}
-                      </Dialog>
-                    </HoverCardTrigger>
-                    {firstEntry && (
-                      <HoverCardContent className="w-[90vw] sm:w-80 animate-fade-in pointer-events-none" side="top">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xl sm:text-2xl">{moodEmojis[firstEntry.mood]}</span>
-                            <span className="font-medium text-xs sm:text-sm">{format(date, "MMM d, yyyy")}</span>
-                          </div>
-                          <div className="p-2 sm:p-3 bg-accent/20 rounded-lg">
-                            <p className="text-xs sm:text-sm text-foreground/90 italic line-clamp-3">
-                              {firstEntry.reflection}
-                            </p>
-                          </div>
-                          {dayEntries.length > 1 && (
-                            <p className="text-xs text-muted-foreground">
-                              +{dayEntries.length - 1} more {dayEntries.length === 2 ? 'entry' : 'entries'}
-                            </p>
                           )}
+
+                          <div>
+                            <h4 className="font-medium text-sm text-muted-foreground mb-2">Your Entry</h4>
+                            <p className="text-foreground whitespace-pre-wrap text-sm sm:text-base leading-relaxed">
+                              {selectedEntries[currentEntryIndex].entry_text}
+                            </p>
+                          </div>
+
+                          <div className="p-3 sm:p-4 bg-accent/20 rounded-lg">
+                            <h4 className="font-medium text-sm text-muted-foreground mb-2">Reflection</h4>
+                            <p className="text-foreground italic text-sm sm:text-base leading-relaxed">
+                              {selectedEntries[currentEntryIndex].reflection}
+                            </p>
+                          </div>
+
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              const entryToDelete = selectedEntries[currentEntryIndex];
+                              onDeleteEntry(entryToDelete.id);
+                              const newEntries = selectedEntries.filter((_, idx) => idx !== currentEntryIndex);
+                              if (newEntries.length > 0) {
+                                setSelectedEntries(newEntries);
+                                setCurrentEntryIndex(Math.min(currentEntryIndex, newEntries.length - 1));
+                              } else {
+                                setSelectedDate(null);
+                                setSelectedEntries([]);
+                                setCurrentEntryIndex(0);
+                              }
+                            }}
+                            className="w-full min-h-[44px] text-base"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Entry
+                          </Button>
                         </div>
-                      </HoverCardContent>
+                      </DialogContent>
                     )}
-                  </HoverCard>
+                  </Dialog>
                 </div>
               );
             })}
