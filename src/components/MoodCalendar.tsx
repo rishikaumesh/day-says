@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 interface JournalEntry {
   id: string;
   entry_date: string;
@@ -31,10 +33,49 @@ const moodEmojis: Record<string, string> = {
 const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProps) => {
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   const [currentMonth] = useState(new Date());
+  const [weeklySuggestions, setWeeklySuggestions] = useState<string[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+  useEffect(() => {
+    const loadWeeklyReflection = async () => {
+      if (entries.length === 0) return;
+      
+      setLoadingSuggestions(true);
+      try {
+        // Get entries from the past 7 days
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const weekAgoStr = format(weekAgo, "yyyy-MM-dd");
+        
+        const recentEntries = entries.filter(e => e.entry_date >= weekAgoStr);
+        
+        if (recentEntries.length === 0) {
+          setWeeklySuggestions([]);
+          return;
+        }
+
+        const { data, error } = await supabase.functions.invoke('analyze-mood', {
+          body: {
+            type: 'weekly-reflection',
+            entries: recentEntries
+          }
+        });
+
+        if (error) throw error;
+        setWeeklySuggestions(data?.suggestions || []);
+      } catch (error) {
+        console.error('Error loading weekly reflection:', error);
+      } finally {
+        setLoadingSuggestions(false);
+      }
+    };
+
+    loadWeeklyReflection();
+  }, [entries]);
 
   const getEntriesForDate = (date: Date) => {
     const dateStr = format(date, "yyyy-MM-dd");
@@ -46,60 +87,6 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
     return dateEntries.length > 0 ? dateEntries[0] : null;
   };
 
-  const averageMood = () => {
-    if (entries.length === 0) return "No entries yet";
-
-    const moodCounts: Record<string, number> = {};
-    entries.forEach((entry) => {
-      moodCounts[entry.mood] = (moodCounts[entry.mood] || 0) + 1;
-    });
-
-    const mostCommon = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0];
-    const capitalizedMood = mostCommon?.[0] ? mostCommon[0].charAt(0).toUpperCase() + mostCommon[0].slice(1) : "Neutral";
-    return mostCommon ? `${moodEmojis[mostCommon[0]]} ${capitalizedMood}` : `${moodEmojis.neutral} Neutral`;
-  };
-
-  const currentStreak = () => {
-    if (entries.length === 0) return 0;
-
-    // Get unique dates that have at least one entry
-    const uniqueDates = Array.from(new Set(entries.map((e) => e.entry_date))).sort(
-      (a, b) => parseLocalDate(b).getTime() - parseLocalDate(a).getTime(),
-    );
-
-    const todayLocal = getTodayLocal();
-
-    // If there's no entry for today, start from yesterday
-    let currentDate = uniqueDates.includes(todayLocal) ? todayLocal : null;
-
-    if (!currentDate) {
-      // Check if the most recent entry is yesterday
-      if (uniqueDates.length === 0) return 0;
-
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = format(yesterday, "yyyy-MM-dd");
-
-      if (uniqueDates[0] !== yesterdayStr) return 0;
-      currentDate = yesterdayStr;
-    }
-
-    let streak = 1;
-
-    // Count consecutive days backwards
-    for (let i = uniqueDates.indexOf(currentDate) + 1; i < uniqueDates.length; i++) {
-      const prevDate = uniqueDates[i];
-      const expectedDate = uniqueDates[i - 1];
-
-      if (isConsecutiveDay(prevDate, expectedDate)) {
-        streak++;
-      } else {
-        break;
-      }
-    }
-
-    return streak;
-  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -107,20 +94,25 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Calendar className="h-5 w-5" />
-            Your Journey
+            Reflect upon..
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-secondary/30 rounded-lg text-center transition-all duration-300 hover:scale-105">
-              <p className="text-sm text-muted-foreground mb-1">Current Streak</p>
-              <p className="text-3xl font-bold text-primary"> {currentStreak()} days</p>
+        <CardContent className="space-y-3">
+          {loadingSuggestions ? (
+            <div className="flex items-center justify-center p-6">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
-            <div className="p-4 bg-accent/30 rounded-lg text-center transition-all duration-300 hover:scale-105">
-              <p className="text-sm text-muted-foreground mb-1">Most Common</p>
-              <p className="text-2xl font-bold">{averageMood()}</p>
+          ) : weeklySuggestions.length > 0 ? (
+            weeklySuggestions.map((suggestion, idx) => (
+              <div key={idx} className="p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg">
+                <p className="text-sm text-foreground">{suggestion}</p>
+              </div>
+            ))
+          ) : (
+            <div className="p-4 bg-muted/30 rounded-lg text-center">
+              <p className="text-sm text-muted-foreground">Start journaling to get personalized reflections</p>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 

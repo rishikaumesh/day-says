@@ -12,7 +12,64 @@ serve(async (req) => {
   }
 
   try {
-    const { journalText, userId } = await req.json();
+    const { journalText, userId, type, entries } = await req.json();
+    
+    if (type === 'weekly-reflection') {
+      // Weekly reflection analysis
+      if (!entries || entries.length === 0) {
+        return new Response(
+          JSON.stringify({ suggestions: [] }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+      if (!LOVABLE_API_KEY) {
+        throw new Error('LOVABLE_API_KEY is not configured');
+      }
+
+      const entriesSummary = entries.map((e: any) => `${e.entry_date}: ${e.entry_text} (Mood: ${e.mood})`).join('\n\n');
+      
+      const weeklyPrompt = `You are a supportive life coach analyzing someone's journal entries from the past week. Based on their emotional patterns and experiences, provide 3-4 actionable, personalized suggestions to help them improve their wellbeing.
+
+Journal entries from the past week:
+${entriesSummary}
+
+Provide thoughtful, specific suggestions based on their actual experiences. Return ONLY valid JSON in this exact format:
+{
+  "suggestions": [
+    "Consider setting aside time for activities that brought you joy this week",
+    "Your stress levels seem elevated - try incorporating a 10-minute meditation each morning"
+  ]
+}`;
+
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [{ role: 'user', content: weeklyPrompt }],
+          temperature: 0.7,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`AI gateway error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+      const cleanContent = content?.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const result = JSON.parse(cleanContent || '{"suggestions":[]}');
+
+      return new Response(
+        JSON.stringify(result),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     if (!journalText || journalText.trim().length === 0) {
       return new Response(
@@ -28,19 +85,19 @@ serve(async (req) => {
 
     console.log('Analyzing mood for journal entry...');
 
-    let systemPrompt = `You are an empathetic journaling companion. Analyze the emotional tone of journal entries and provide gentle, encouraging responses.
+    let systemPrompt = `You are an empathetic journaling companion. Analyze the emotional tone of journal entries and provide a gentle, actionable suggestion.
 
 Your task:
 1. Classify the mood into EXACTLY one of: happy, sad, exciting, nervous, neutral
-2. Provide a 1-2 sentence gentle, encouraging response that acknowledges their feelings
+2. Provide a 1-2 sentence actionable suggestion that helps them based on their feelings (NOT a question)
 
 CRITICAL: You MUST respond with ONLY valid JSON in this exact format:
 {
   "mood": "happy",
-  "response": "That sounds like a wonderful moment. Try to hold on to that feeling 💛."
+  "response": "Keep embracing these positive moments. Consider writing down what made today special so you can revisit it later 💛."
 }
 
-Do not include any text before or after the JSON. The mood must be lowercase and one of the five options listed above.`;
+Do not include any text before or after the JSON. The mood must be lowercase and one of the five options listed above. The response should be a SUGGESTION, not a question.`;
 
     if (userId) {
       try {
@@ -96,19 +153,19 @@ PERSONALIZATION CONTEXT:
 ${interestsList ? `Their interests: ${interestsList}` : ''}
 ${habitsList ? `Things that help them feel better: ${habitsList}` : ''}
 
-IMPORTANT: When they're feeling down, sad, stressed, or need comfort, ACTIVELY SUGGEST activities from their interests and habits. Be specific and personal!
+IMPORTANT: Provide actionable suggestions (NOT questions) based on their mood. When they're feeling down, sad, stressed, or need comfort, ACTIVELY SUGGEST activities from their interests and habits. Be specific and personal!
 
-Examples:
-- If they love bubble tea and are sad: "Sorry you're feeling down, ${name}. How about treating yourself to that bubble tea you love? 🧋"
-- If they enjoy walks and are stressed: "That sounds stressful, ${name}. Maybe a long walk would help clear your mind? 🚶"
-- If they like music when upset: "I hear you, ${name}. Put on your favorite music and let it soothe you 🎵"
+Examples of good suggestions:
+- If they love bubble tea and are sad: "I'm sorry you're feeling down, ${name}. Treat yourself to that bubble tea you love - it might brighten your day 🧋"
+- If they enjoy walks and are stressed: "That sounds stressful, ${name}. Take a long walk to clear your mind and reset 🚶"
+- If they like music when upset: "Put on your favorite music and let it soothe you, ${name} 🎵"
 
-Analyze the mood (happy/sad/exciting/nervous/neutral) and provide a warm, personalized response (1-2 sentences) that references their specific interests when appropriate.
+Analyze the mood (happy/sad/exciting/nervous/neutral) and provide a warm, personalized suggestion (1-2 sentences) that references their specific interests when appropriate.
 
 Return JSON format:
 {
   "mood": "sad",
-  "response": "I'm sorry you're having a rough day, ${name}. Maybe grab that bubble tea you love or take a walk to clear your head? 🧋"
+  "response": "I'm sorry you're having a rough day, ${name}. Grab that bubble tea you love or take a walk - both might help you feel better 🧋"
 }`;
           
           console.log('Using personalized prompt for:', name);
