@@ -21,6 +21,15 @@ serve(async (req) => {
         throw new Error("LOVABLE_API_KEY is not configured");
       }
 
+      const systemCasualGuide = `You write one-line casual text messages to friends. Rules:
+- 10–18 words total
+- Start with "Hey" or "Hey [Name]"
+- Use 0–1 emoji max
+- Contractions are good (didn't, can't, I'm)
+- No formal phrases: regret, sincerely, apology, accountability, responsibility, disagreement, "I value our relationship", "take full responsibility"
+- No line breaks, no quotes around the message
+- Output ONLY the final message text, nothing else`;
+
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -29,7 +38,10 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
-          messages: [{ role: "user", content: prompt }],
+          messages: [
+            { role: "system", content: systemCasualGuide },
+            { role: "user", content: prompt }
+          ],
           temperature: 0.8,
         }),
       });

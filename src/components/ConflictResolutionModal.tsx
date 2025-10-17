@@ -49,15 +49,15 @@ export const ConflictResolutionModal = ({
 
     try {
       const conflictPrompts: Record<string, string> = {
-        apologize: `Generate a sincere, heartfelt apology message to ${personName} after a conflict. Make it personal, genuine, and brief (2-3 sentences). Focus on taking responsibility and wanting to make things right.`,
-        space: `Generate a thoughtful message to ${personName} suggesting some space to reflect after a conflict. Make it respectful, caring, and brief (2-3 sentences). Express that you value the relationship and need time to process.`,
-        talk: `Generate a gentle message to ${personName} asking to talk about a recent conflict. Make it open, non-confrontational, and brief (2-3 sentences). Express willingness to listen and work things out.`,
+        apologize: `Write 1 short text to ${personName} after a fight. Super casual, friendly, 10–18 words. Start with 'Hey' or 'Hey ${personName}'. Use 0–1 emoji. Avoid formal words/phrases: regret, responsibility, disagreement, sincerely, apology, accountability, 'I value our relationship'. Example vibe: 'Hey ${personName}, sorry about earlier — didn't mean for it to blow up 😅'. Output only the message.`,
+        space: `Write 1 short text to ${personName} saying you need a little space to cool off and you'll talk later. Super casual, 10–18 words. Start with Hey. 0–1 emoji. Avoid formal words. Output only the message.`,
+        talk: `Write 1 short text to ${personName} asking to chat later today or tomorrow. Chill, open tone, 10–18 words. Start with Hey. 0–1 emoji. Avoid formal words. Output only the message.`,
       };
 
       const positivePrompts: Record<string, string> = {
-        "share-joy": `Generate a warm, casual message to ${personName} expressing how much you enjoyed spending time together. Make it friendly, genuine, and brief (2-3 sentences). Include a playful or fun tone.`,
-        "plan-hangout": `Generate an enthusiastic message to ${personName} suggesting to hang out again soon. Make it casual, fun, and brief (2-3 sentences). Show genuine excitement about another meetup.`,
-        "thank": `Generate a heartfelt thank you message to ${personName} for the great time together. Make it warm, appreciative, and brief (2-3 sentences). Express how much it meant to you.`,
+        "share-joy": `Write 1 short text to ${personName} sharing good vibes from today. Warm, playful, 10–18 words. Start with Hey. 0–1 emoji. Output only the message.`,
+        "plan-hangout": `Write 1 short text to ${personName} to meet again soon. Fun, casual, 10–18 words. Start with Hey. 0–1 emoji. Output only the message.`,
+        "thank": `Write 1 short text to ${personName} to say thanks for today. Warm, casual, 10–18 words. Start with Hey. 0–1 emoji. Output only the message.`,
       };
 
       const prompts = interactionType === "conflict" ? conflictPrompts : positivePrompts;
