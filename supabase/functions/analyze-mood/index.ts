@@ -53,23 +53,21 @@ serve(async (req) => {
         throw new Error("LOVABLE_API_KEY is not configured");
       }
 
-      const detectionPrompt = `Analyze this journal entry for interpersonal conflicts and person names.
+      const detectionPrompt = `Analyze this journal entry for interpersonal context and person names.
 
 Journal entry: "${journalText}"
 
-Your job:
-1) Detect if the journal entry involves:
-   - a conflict (fight, argument, tension, breakup, disagreement, hurt feelings, upset with someone, etc.)
-   - a positive/happy moment (hanging out with someone, doing something fun, having a good time)
-2) Extract the name of the person mentioned (a proper noun that’s likely a name — pick the most relevant if multiple).
-3) Generate a short, informal message in the user’s voice that fits the tone of the entry. The message should:
-   - sound casual and friendly
-   - not be robotic
-   - reflect the vibe of the situation (warm/light if happy, soft/apologetic if conflict)
-   - not include any questions (but can sound open-ended)
-   - start with the person’s name in a friendly way (e.g., "Hey", "Heyy", "Hey Rishika")
+Detect:
+1. If there's a conflict (fight, argument, disagreement, breakup, tension, upset with someone, etc.)
+2. If there's a positive interaction (fun time, hangout, good moment, joy)
+3. Names of people mentioned (proper nouns that are likely names)
+4. Generate a short, casual message for the person:
+   - If positive → friendly, playful, warm
+   - If conflict → soft, apologetic
+   - No questions at the end
+   - Start with "Hey", "Heyy", or "Hey [Name]"
 
-CRITICAL JSON SHAPES (return ONLY one of these):
+Respond with ONLY valid JSON in this exact format:
 
 If conflict:
 {
@@ -95,11 +93,10 @@ If neither:
 }
 
 Guidelines:
-- The "personName" should be a single, capitalized proper noun (e.g., "Rishika").
+- "personName" should be a single, capitalized proper noun (e.g., "Rishika").
 - "conflictType" should be a short label like "fight", "argument", "tension", "disagreement", "breakup".
-- The message must match the mood: friendly and casual, never formal.
-- Keep the tone light and natural — contractions and small jokes are fine.
-- Do not include any text before or after the JSON.
+- Keep messages natural, not robotic. Jokes or casual tone are good.
+- Do not include any text outside the JSON.
 
 Examples:
 Entry: "I had a fight with Chirag."
@@ -140,13 +137,6 @@ Entry: "Had the best boba date with Aman today."
   "message": "Hey Aman, today was so good fr. My boba cravings are happy now 😎"
 }
 
-Entry: "I'm feeling low today. Didn't really talk to anyone."
-→
-{
-  "hasConflict": false,
-  "hasPositive": false
-}
-
 Entry: "Me and Shreya fought again."
 →
 {
@@ -164,6 +154,13 @@ Entry: "Hung out with Aarav and the boys today, had the best laugh in a while."
   "hasPositive": true,
   "personName": "Aarav",
   "message": "Hey Aarav, today was such a vibe 😂 good laughs fr."
+}
+
+Entry: "I'm feeling low today. Didn't really talk to anyone."
+→
+{
+  "hasConflict": false,
+  "hasPositive": false
 }`;
 
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
