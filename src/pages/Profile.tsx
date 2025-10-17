@@ -193,65 +193,71 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
-      <div className="container mx-auto px-4 py-8 max-w-3xl">
-        <div className="mb-8">
-          <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-4">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-3xl">
+        <div className="mb-6 sm:mb-8">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/dashboard')} 
+            className="mb-4 min-h-[44px]"
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Button>
-          <h1 className="text-4xl font-bold">Profile Settings</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold">Profile Settings</h1>
         </div>
 
-        <div className="bg-card border-2 border-border rounded-2xl p-8 shadow-xl space-y-6">
+        <div className="bg-card border-2 border-border rounded-2xl p-4 sm:p-8 shadow-xl space-y-6">
           <div>
-            <h2 className="text-2xl font-bold mb-4">User Info</h2>
+            <h2 className="text-xl sm:text-2xl font-bold mb-4">User Info</h2>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name" className="text-base">Name</Label>
                 <Input
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Your name"
+                  className="min-h-[44px] text-base"
                 />
               </div>
               <div>
-                <Label htmlFor="email">Email (read-only)</Label>
+                <Label htmlFor="email" className="text-base">Email (read-only)</Label>
                 <Input
                   id="email"
                   value={user?.email || ''}
                   disabled
+                  className="min-h-[44px] text-base"
                 />
               </div>
               <div>
-                <Label htmlFor="goals">Journaling Goals</Label>
+                <Label htmlFor="goals" className="text-base">Journaling Goals</Label>
                 <Textarea
                   id="goals"
                   value={journalingGoals}
                   onChange={(e) => setJournalingGoals(e.target.value)}
                   placeholder="What do you hope to achieve with journaling?"
-                  className="min-h-[100px]"
+                  className="min-h-[100px] text-base"
                 />
               </div>
             </div>
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold mb-4">Your Interests</h2>
+            <h2 className="text-xl sm:text-2xl font-bold mb-4">Your Interests</h2>
             <div className="flex flex-wrap gap-2 mb-4">
               {interests.map((interest, i) => (
-                <div key={i} className="px-4 py-2 bg-primary text-primary-foreground rounded-full flex items-center gap-2">
+                <div key={i} className="px-3 sm:px-4 py-2 bg-primary text-primary-foreground rounded-full flex items-center gap-2 text-sm sm:text-base min-h-[36px]">
                   {interest}
                   <button
                     onClick={() => removeInterest(interest)}
-                    className="hover:bg-primary-foreground/20 rounded-full p-1"
+                    className="hover:bg-primary-foreground/20 rounded-full p-1 min-w-[24px] min-h-[24px]"
                   >
                     <X className="h-3 w-3" />
                   </button>
                 </div>
               ))}
               {interests.length === 0 && (
-                <p className="text-muted-foreground">No interests set yet</p>
+                <p className="text-muted-foreground text-sm sm:text-base">No interests set yet</p>
               )}
             </div>
             <div className="flex gap-2">
@@ -260,29 +266,34 @@ const Profile = () => {
                 onChange={(e) => setNewInterest(e.target.value)}
                 placeholder="Add a new interest..."
                 onKeyPress={(e) => e.key === 'Enter' && addInterest()}
+                className="min-h-[44px] text-base"
               />
-              <Button onClick={addInterest} size="icon">
-                <Plus className="h-4 w-4" />
+              <Button 
+                onClick={addInterest} 
+                size="icon"
+                className="min-w-[44px] min-h-[44px]"
+              >
+                <Plus className="h-5 w-5" />
               </Button>
             </div>
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold mb-4">Comfort Habits</h2>
+            <h2 className="text-xl sm:text-2xl font-bold mb-4">Comfort Habits</h2>
             <div className="space-y-2 mb-4">
               {habits.map((habit) => (
-                <div key={habit.id} className="p-3 bg-secondary/20 rounded-lg border border-border flex items-center justify-between">
-                  <span>{habit.description}</span>
+                <div key={habit.id} className="p-3 bg-secondary/20 rounded-lg border border-border flex items-center justify-between min-h-[48px]">
+                  <span className="text-sm sm:text-base">{habit.description}</span>
                   <button
                     onClick={() => removeHabit(habit.id)}
-                    className="hover:bg-destructive/20 rounded-full p-1"
+                    className="hover:bg-destructive/20 rounded-full p-2 min-w-[36px] min-h-[36px]"
                   >
                     <X className="h-4 w-4 text-destructive" />
                   </button>
                 </div>
               ))}
               {habits.length === 0 && (
-                <p className="text-muted-foreground">No habits set yet</p>
+                <p className="text-muted-foreground text-sm sm:text-base">No habits set yet</p>
               )}
             </div>
             <div className="flex gap-2">
@@ -291,18 +302,31 @@ const Profile = () => {
                 onChange={(e) => setNewHabit(e.target.value)}
                 placeholder="Add a new habit..."
                 onKeyPress={(e) => e.key === 'Enter' && addHabit()}
+                className="min-h-[44px] text-base"
               />
-              <Button onClick={addHabit} size="icon">
-                <Plus className="h-4 w-4" />
+              <Button 
+                onClick={addHabit} 
+                size="icon"
+                className="min-w-[44px] min-h-[44px]"
+              >
+                <Plus className="h-5 w-5" />
               </Button>
             </div>
           </div>
 
-          <div className="flex gap-4">
-            <Button onClick={handleSave} disabled={loading} className="flex-1">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
+            <Button 
+              onClick={handleSave} 
+              disabled={loading} 
+              className="flex-1 min-h-[48px] text-base"
+            >
               {loading ? 'Saving...' : 'Save Changes'}
             </Button>
-            <Button onClick={signOut} variant="outline">
+            <Button 
+              onClick={signOut} 
+              variant="outline"
+              className="min-h-[48px] text-base"
+            >
               Sign Out
             </Button>
           </div>

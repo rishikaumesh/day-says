@@ -99,40 +99,41 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
 
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 sm:space-y-6 animate-fade-in">
       <Card className="border-2 shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-foreground">
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-foreground text-lg sm:text-xl">
             <Calendar className="h-5 w-5" />
             Reflect upon..
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 p-4 sm:p-6">
           {loadingSummary ? (
             <div className="flex items-center justify-center p-6">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
           ) : weeklySummary ? (
-            <div className="p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg">
-              <p className="text-sm text-foreground leading-relaxed">{weeklySummary}</p>
+            <div className="p-3 sm:p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg">
+              <p className="text-sm sm:text-base text-foreground leading-relaxed">{weeklySummary}</p>
             </div>
           ) : (
-            <div className="p-4 bg-muted/30 rounded-lg text-center">
-              <p className="text-sm text-muted-foreground">Start journaling to get personalized reflections</p>
+            <div className="p-3 sm:p-4 bg-muted/30 rounded-lg text-center">
+              <p className="text-sm sm:text-base text-muted-foreground">Start journaling to get personalized reflections</p>
             </div>
           )}
         </CardContent>
       </Card>
 
       <Card className="border-2 shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-foreground">{format(currentMonth, "MMMM yyyy")}</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-foreground text-lg sm:text-xl">{format(currentMonth, "MMMM yyyy")}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-7 gap-2">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-              <div key={day} className="text-center text-sm font-medium text-muted-foreground p-2">
-                {day}
+        <CardContent className="p-2 sm:p-6">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
+            {["S", "M", "T", "W", "T", "F", "S"].map((day, i) => (
+              <div key={i} className="text-center text-xs sm:text-sm font-medium text-muted-foreground p-1 sm:p-2">
+                <span className="hidden sm:inline">{["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][i]}</span>
+                <span className="sm:hidden">{day}</span>
               </div>
             ))}
 
@@ -162,26 +163,26 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
                         }
                       }}
                       className={`
-                        aspect-square rounded-lg p-2 text-sm transition-all duration-300 relative
+                        aspect-square rounded-lg p-1 sm:p-2 text-sm transition-all duration-300 relative min-h-[48px] sm:min-h-0
                         ${dayEntries.length > 0 ? `${getGreenShade(dayEntries.length)} hover:opacity-80 cursor-pointer hover:scale-110` : "bg-muted/30"}
                         ${isToday ? "ring-2 ring-primary" : ""}
                       `}
                       disabled={!firstEntry}
                     >
-                      <div className={`text-xs mb-1 ${dayEntries.length > 2 ? 'text-green-900 dark:text-green-100' : 'text-muted-foreground'}`}>
+                      <div className={`text-xs mb-0 sm:mb-1 ${dayEntries.length > 2 ? 'text-green-900 dark:text-green-100' : 'text-muted-foreground'}`}>
                         {format(date, "d")}
                       </div>
                       {firstEntry && (
-                        <div className="text-2xl">{moodEmojis[firstEntry.mood]}</div>
+                        <div className="text-xl sm:text-2xl">{moodEmojis[firstEntry.mood]}</div>
                       )}
                     </button>
                   </DialogTrigger>
 
                   {selectedEntries.length > 0 && selectedDate && (
-                    <DialogContent className="max-w-md">
-                      <DialogHeader>
-                        <DialogTitle className="flex items-center justify-between">
-                          <span>{format(selectedDate, "MMMM d, yyyy")}</span>
+                    <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
+                      <DialogHeader className="pb-4">
+                        <DialogTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          <span className="text-base sm:text-lg">{format(selectedDate, "MMMM d, yyyy")}</span>
                           <div className="flex items-center gap-2">
                             <span className="text-3xl">{moodEmojis[selectedEntries[currentEntryIndex].mood]}</span>
                             {selectedEntries.length > 1 && (
@@ -201,6 +202,7 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
                               size="sm"
                               onClick={() => setCurrentEntryIndex(Math.max(0, currentEntryIndex - 1))}
                               disabled={currentEntryIndex === 0}
+                              className="min-h-[44px]"
                             >
                               Previous
                             </Button>
@@ -209,6 +211,7 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
                               size="sm"
                               onClick={() => setCurrentEntryIndex(Math.min(selectedEntries.length - 1, currentEntryIndex + 1))}
                               disabled={currentEntryIndex === selectedEntries.length - 1}
+                              className="min-h-[44px]"
                             >
                               Next
                             </Button>
@@ -217,12 +220,16 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
 
                         <div>
                           <h4 className="font-medium text-sm text-muted-foreground mb-2">Your Entry</h4>
-                          <p className="text-foreground whitespace-pre-wrap">{selectedEntries[currentEntryIndex].entry_text}</p>
+                          <p className="text-foreground whitespace-pre-wrap text-sm sm:text-base leading-relaxed">
+                            {selectedEntries[currentEntryIndex].entry_text}
+                          </p>
                         </div>
 
-                        <div className="p-4 bg-accent/20 rounded-lg">
+                        <div className="p-3 sm:p-4 bg-accent/20 rounded-lg">
                           <h4 className="font-medium text-sm text-muted-foreground mb-2">Reflection</h4>
-                          <p className="text-foreground italic">{selectedEntries[currentEntryIndex].reflection}</p>
+                          <p className="text-foreground italic text-sm sm:text-base leading-relaxed">
+                            {selectedEntries[currentEntryIndex].reflection}
+                          </p>
                         </div>
 
                         <Button
@@ -241,7 +248,7 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
                               setCurrentEntryIndex(0);
                             }
                           }}
-                          className="w-full"
+                          className="w-full min-h-[44px] text-base"
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete Entry
