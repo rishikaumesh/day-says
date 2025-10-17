@@ -139,30 +139,54 @@ Do not include any text before or after the JSON. The mood must be lowercase and
         const habits = await habitsResponse.json();
         console.log('Habits:', habits);
 
-        if (profile || interests.length > 0 || habits.length > 0) {
+        // Fetch mood signatures (learned patterns)
+        const signaturesResponse = await fetch(`${supabaseUrl}/rest/v1/mood_signatures?user_id=eq.${userId}&select=phrase,associated_mood,confidence_score&order=confidence_score.desc&limit=20`, {
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        const signatures = await signaturesResponse.json();
+        console.log('Mood signatures:', signatures);
+
+        if (profile || interests.length > 0 || habits.length > 0 || signatures.length > 0) {
           const name = profile?.name || 'there';
           const interestsList = interests.map((i: any) => i.interest).join(', ');
           const habitsList = habits.map((h: any) => h.description).join(', ');
+          
+          // Build mood signature context
+          let signatureContext = '';
+          if (signatures.length > 0) {
+            const signatureLines = signatures.map((s: any) => 
+              `- "${s.phrase}" → ${s.associated_mood} (confidence: ${s.confidence_score})`
+            ).join('\n');
+            signatureContext = `\n\nLEARNED MOOD PATTERNS FOR ${name.toUpperCase()}:
+Based on their past entries, here are phrases/activities and their typical associated moods:
+${signatureLines}
+
+Use these patterns to better understand their emotional tone. For example, if they mention an activity you've seen before, reference the learned pattern.`;
+          }
 
           systemPrompt = `You are an empathetic AI companion for ${name}. 
 
 PERSONALIZATION CONTEXT:
 ${interestsList ? `Their interests: ${interestsList}` : ''}
-${habitsList ? `Things that help them feel better: ${habitsList}` : ''}
+${habitsList ? `Things that help them feel better: ${habitsList}` : ''}${signatureContext}
 
 IMPORTANT: Provide actionable suggestions (NOT questions) based on their mood. When they're feeling down, sad, stressed, or need comfort, ACTIVELY SUGGEST activities from their interests and habits. Be specific and personal!
 
 Examples of good suggestions:
 - If they love bubble tea and are sad: "I'm sorry you're feeling down, ${name}. Treat yourself to that bubble tea you love - it might brighten your day 🧋"
 - If they enjoy walks and are stressed: "That sounds stressful, ${name}. Take a long walk to clear your mind and reset 🚶"
-- If they like music when upset: "Put on your favorite music and let it soothe you, ${name} 🎵"
+- If they like gaming and mention "valorant": "Playing Valorant sounds exciting, ${name}! Hope you had some great matches 🎮"
 
 Analyze the mood (happy/sad/exciting/nervous/neutral) and provide a warm, personalized suggestion (1-2 sentences) that references their specific interests when appropriate.
 
 Return JSON format:
 {
-  "mood": "sad",
-  "response": "I'm sorry you're having a rough day, ${name}. Grab that bubble tea you love or take a walk - both might help you feel better 🧋"
+  "mood": "happy",
+  "response": "Playing Valorant sounds exciting, ${name}! Hope you had some great matches 🎮"
 }`;
           
           console.log('Using personalized prompt for:', name);
@@ -260,6 +284,82 @@ Return JSON format:
     }
 
     console.log('Successfully analyzed mood:', result);
+
+    // Update mood signatures (learn from this entry)
+    if (userId && journalText) {
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+        
+        // Extract key phrases (simple approach: split by common delimiters and take meaningful words)
+        const phrases = journalText
+          .toLowerCase()
+          .split(/[.,!?;:\n]/)
+          .map((p: string) => p.trim())
+          .filter((p: string) => p.length > 3 && p.length < 50)
+          .slice(0, 5); // Limit to 5 phrases per entry
+        
+        console.log('Extracting phrases for mood learning:', phrases);
+        
+        // Update or insert mood signatures
+        for (const phrase of phrases) {
+          // Try to update existing signature
+          const updateResponse = await fetch(`${supabaseUrl}/rest/v1/mood_signatures?user_id=eq.${userId}&phrase=eq.${encodeURIComponent(phrase)}`, {
+            method: 'PATCH',
+            headers: {
+              'apikey': supabaseKey,
+              'Authorization': `Bearer ${supabaseKey}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({
+              associated_mood: result.mood,
+              confidence_score: 1, // Will be incremented via SQL
+              last_seen_at: new Date().toISOString()
+            })
+          });
+          
+          // If no rows updated, insert new signature
+          if (updateResponse.status === 200) {
+            // Increment confidence
+            await fetch(`${supabaseUrl}/rest/v1/rpc/increment_confidence`, {
+              method: 'POST',
+              headers: {
+                'apikey': supabaseKey,
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                p_user_id: userId,
+                p_phrase: phrase
+              })
+            });
+          } else {
+            // Insert new signature
+            await fetch(`${supabaseUrl}/rest/v1/mood_signatures`, {
+              method: 'POST',
+              headers: {
+                'apikey': supabaseKey,
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=minimal'
+              },
+              body: JSON.stringify({
+                user_id: userId,
+                phrase: phrase,
+                associated_mood: result.mood,
+                confidence_score: 1
+              })
+            });
+          }
+        }
+        
+        console.log('Updated mood signatures for learning');
+      } catch (signatureError) {
+        console.error('Error updating mood signatures:', signatureError);
+        // Don't fail the request if signature update fails
+      }
+    }
 
     return new Response(
       JSON.stringify(result),

@@ -58,6 +58,36 @@ export type Database = {
           },
         ]
       }
+      mood_signatures: {
+        Row: {
+          associated_mood: string
+          confidence_score: number
+          created_at: string
+          id: string
+          last_seen_at: string
+          phrase: string
+          user_id: string
+        }
+        Insert: {
+          associated_mood: string
+          confidence_score?: number
+          created_at?: string
+          id?: string
+          last_seen_at?: string
+          phrase: string
+          user_id: string
+        }
+        Update: {
+          associated_mood?: string
+          confidence_score?: number
+          created_at?: string
+          id?: string
+          last_seen_at?: string
+          phrase?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
