@@ -339,14 +339,12 @@ Keep it concise and uplifting. Return ONLY valid JSON in this exact format:
 You must not ask questions or break out of JSON format.
 
 Your task:
-1. Classify the mood into EXACTLY one of the following (use these exact words):
-   - "exciting": anticipation, thrill, motivation, energy, excitement about something (e.g., "I'm excited for my new job", "can't wait for tomorrow")
-   - "happy": joy, gratitude, peace, contentment, lightness, satisfaction
+1. Classify the mood into EXACTLY one of the following:
+   - "happy": joy, gratitude, peace, contentment, lightness
    - "sad": loneliness, disappointment, grief, feeling low
+   - "exciting": anticipation, thrill, motivation, energy
    - "nervous": anxiety, overthinking, stress, pressure, tension, fear of outcome, feeling overwhelmed
    - "neutral": factual tone, no strong emotional weight
-
-CRITICAL: When someone expresses excitement about something (using words like "excited", "can't wait", "looking forward to"), classify it as "exciting" NOT "happy".
 
 2. Provide a **1–2 sentence actionable suggestion** that:
    - Acknowledges their feeling gently
@@ -568,19 +566,10 @@ Return JSON format:
 
     // Validate mood is one of the expected values (lowercase to match database enum)
     const validMoods = ["happy", "sad", "exciting", "nervous", "neutral"];
-    
-    // Normalize the mood
-    let normalizedMood = result.mood.toLowerCase();
-    
-    // Map "excited" to "exciting" since both are valid ways to express the same feeling
-    if (normalizedMood === "excited") {
-      normalizedMood = "exciting";
-    }
-    
-    if (!validMoods.includes(normalizedMood)) {
+    if (!validMoods.includes(result.mood.toLowerCase())) {
       result.mood = "neutral";
     } else {
-      result.mood = normalizedMood;
+      result.mood = result.mood.toLowerCase();
     }
 
     console.log("Successfully analyzed mood:", result);

@@ -33,17 +33,6 @@ All colors MUST be HSL.
     /* Lavender accent */
     --accent: 265 45% 75%;
     --accent-foreground: 270 8% 25%;
-    
-    /* Deep accent for CTAs */
-    --accent-deep: 142 45% 35%;
-    --accent-deep-foreground: 0 0% 100%;
-    
-    /* Mood-specific gradients */
-    --mood-happy: linear-gradient(135deg, hsl(140 80% 59%), hsl(169 94% 60%));
-    --mood-sad: linear-gradient(135deg, hsl(216 38% 47%), hsl(209 34% 74%));
-    --mood-exciting: linear-gradient(135deg, hsl(33 93% 54%), hsl(49 100% 50%));
-    --mood-nervous: linear-gradient(135deg, hsl(47 94% 68%), hsl(22 93% 54%));
-    --mood-neutral: linear-gradient(135deg, hsl(220 13% 65%), hsl(220 13% 84%));
 
     --destructive: 0 70% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -92,17 +81,6 @@ All colors MUST be HSL.
 
     --accent: 265 35% 50%;
     --accent-foreground: 0 0% 100%;
-    
-    /* Deep accent for CTAs - dark mode */
-    --accent-deep: 142 40% 45%;
-    --accent-deep-foreground: 0 0% 100%;
-    
-    /* Mood-specific gradients - dark mode */
-    --mood-happy: linear-gradient(135deg, hsl(140 70% 50%), hsl(169 85% 50%));
-    --mood-sad: linear-gradient(135deg, hsl(216 35% 40%), hsl(209 30% 65%));
-    --mood-exciting: linear-gradient(135deg, hsl(33 90% 48%), hsl(49 95% 45%));
-    --mood-nervous: linear-gradient(135deg, hsl(47 90% 60%), hsl(22 90% 48%));
-    --mood-neutral: linear-gradient(135deg, hsl(220 10% 55%), hsl(220 10% 75%));
 
     --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 100%;
@@ -128,35 +106,5 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-  }
-}
-
-@layer utilities {
-  .glass-card {
-    @apply backdrop-blur-md bg-card/80 border border-border/50;
-  }
-  
-  .glass-modal {
-    @apply backdrop-blur-lg bg-background/95 border border-border/60;
-  }
-  
-  .mood-gradient-happy {
-    background: var(--mood-happy);
-  }
-  
-  .mood-gradient-sad {
-    background: var(--mood-sad);
-  }
-  
-  .mood-gradient-exciting {
-    background: var(--mood-exciting);
-  }
-  
-  .mood-gradient-nervous {
-    background: var(--mood-nervous);
-  }
-  
-  .mood-gradient-neutral {
-    background: var(--mood-neutral);
   }
 }

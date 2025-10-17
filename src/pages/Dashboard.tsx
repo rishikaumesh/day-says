@@ -364,7 +364,6 @@ const Dashboard = () => {
               <Button
                 onClick={handleSubmit}
                 disabled={!journalText.trim() || isAnalyzing}
-                variant="cta"
                 className="w-full min-h-[48px] text-base font-semibold"
               >
                 {isAnalyzing ? "Analyzing..." : "Save Entry"}
