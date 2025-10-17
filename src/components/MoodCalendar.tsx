@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 interface JournalEntry {
@@ -42,9 +42,23 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
   const monthEnd = endOfMonth(currentMonth);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
+  // Memoize recent entries key to prevent unnecessary reloads
+  const recentEntriesKey = useMemo(() => {
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const weekAgoStr = format(weekAgo, "yyyy-MM-dd");
+    const recentEntries = entries.filter(e => e.entry_date >= weekAgoStr);
+    
+    // Create a stable key from recent entry IDs
+    return recentEntries.map(e => e.id).sort().join(',');
+  }, [entries]);
+
   useEffect(() => {
     const loadWeeklyReflection = async () => {
-      if (entries.length === 0) return;
+      if (entries.length === 0) {
+        setWeeklySummary("");
+        return;
+      }
       
       setLoadingSummary(true);
       try {
@@ -56,6 +70,7 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
         
         if (recentEntries.length === 0) {
           setWeeklySummary("");
+          setLoadingSummary(false);
           return;
         }
 
@@ -76,7 +91,7 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
     };
 
     loadWeeklyReflection();
-  }, [entries]);
+  }, [recentEntriesKey]);
 
   const getEntriesForDate = (date: Date) => {
     const dateStr = format(date, "yyyy-MM-dd");
