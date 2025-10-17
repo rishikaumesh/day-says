@@ -1,6 +1,14 @@
 import { useState } from "react";
-import { JournalEntry } from "@/utils/localStorage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+interface JournalEntry {
+  id: string;
+  date: string;
+  journalText: string;
+  mood: string;
+  response: string;
+  timestamp: string;
+}
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Trash2, Calendar } from "lucide-react";
