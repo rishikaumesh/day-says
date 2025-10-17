@@ -33,8 +33,8 @@ const moodEmojis: Record<string, string> = {
 const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProps) => {
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   const [currentMonth] = useState(new Date());
-  const [weeklySuggestions, setWeeklySuggestions] = useState<string[]>([]);
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [weeklySummary, setWeeklySummary] = useState<string>("");
+  const [loadingSummary, setLoadingSummary] = useState(false);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -44,9 +44,8 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
     const loadWeeklyReflection = async () => {
       if (entries.length === 0) return;
       
-      setLoadingSuggestions(true);
+      setLoadingSummary(true);
       try {
-        // Get entries from the past 7 days
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
         const weekAgoStr = format(weekAgo, "yyyy-MM-dd");
@@ -54,7 +53,7 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
         const recentEntries = entries.filter(e => e.entry_date >= weekAgoStr);
         
         if (recentEntries.length === 0) {
-          setWeeklySuggestions([]);
+          setWeeklySummary("");
           return;
         }
 
@@ -66,11 +65,11 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
         });
 
         if (error) throw error;
-        setWeeklySuggestions(data?.suggestions || []);
+        setWeeklySummary(data?.summary || "");
       } catch (error) {
         console.error('Error loading weekly reflection:', error);
       } finally {
-        setLoadingSuggestions(false);
+        setLoadingSummary(false);
       }
     };
 
@@ -98,16 +97,14 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {loadingSuggestions ? (
+          {loadingSummary ? (
             <div className="flex items-center justify-center p-6">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
-          ) : weeklySuggestions.length > 0 ? (
-            weeklySuggestions.map((suggestion, idx) => (
-              <div key={idx} className="p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg">
-                <p className="text-sm text-foreground">{suggestion}</p>
-              </div>
-            ))
+          ) : weeklySummary ? (
+            <div className="p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg">
+              <p className="text-sm text-foreground leading-relaxed">{weeklySummary}</p>
+            </div>
           ) : (
             <div className="p-4 bg-muted/30 rounded-lg text-center">
               <p className="text-sm text-muted-foreground">Start journaling to get personalized reflections</p>

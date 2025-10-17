@@ -30,17 +30,14 @@ serve(async (req) => {
 
       const entriesSummary = entries.map((e: any) => `${e.entry_date}: ${e.entry_text} (Mood: ${e.mood})`).join('\n\n');
       
-      const weeklyPrompt = `You are a supportive life coach analyzing someone's journal entries from the past week. Based on their emotional patterns and experiences, provide 3-4 actionable, personalized suggestions to help them improve their wellbeing.
+      const weeklyPrompt = `You are a supportive life coach analyzing someone's journal entries from the past week. Provide a brief, warm reflection on their week in 2-3 sentences that captures the essence of their emotional journey and offers one actionable insight.
 
 Journal entries from the past week:
 ${entriesSummary}
 
-Provide thoughtful, specific suggestions based on their actual experiences. Return ONLY valid JSON in this exact format:
+Keep it concise and uplifting. Return ONLY valid JSON in this exact format:
 {
-  "suggestions": [
-    "Consider setting aside time for activities that brought you joy this week",
-    "Your stress levels seem elevated - try incorporating a 10-minute meditation each morning"
-  ]
+  "summary": "Your week showed a mix of highs and lows, with moments of excitement balanced by some stress. Consider taking more breaks between intense activities to maintain your energy and positivity."
 }`;
 
       const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
