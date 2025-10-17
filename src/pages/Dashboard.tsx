@@ -217,12 +217,26 @@ const Dashboard = () => {
         return;
       }
 
-      if (data?.hasConflict && data?.personName) {
-        // Show conflict modal after AI response modal is closed
-        setTimeout(() => {
-          setConflictData({ personName: data.personName });
-          setShowConflictModal(true);
-        }, 1000);
+      // Handle both conflicts and positive interactions
+      if ((data?.hasConflict || data?.hasPositive) && data?.personName && data?.message) {
+        if (data.hasConflict) {
+          // Show conflict modal for conflicts
+          setTimeout(() => {
+            setConflictData({ personName: data.personName });
+            setShowConflictModal(true);
+          }, 1000);
+        } else if (data.hasPositive) {
+          // Show send message modal for positive interactions
+          setTimeout(() => {
+            setSendMessageData({
+              people: [data.personName],
+              intent: "share",
+              mood: "happy",
+              entrySnippet: data.message,
+            });
+            setShowSendMessageModal(true);
+          }, 1500);
+        }
       }
     } catch (error) {
       console.error("Failed to detect conflict:", error);
@@ -230,37 +244,6 @@ const Dashboard = () => {
     }
   };
 
-  const extractNamesAndIntent = async (text: string, detectedMood: string) => {
-    try {
-      const { data, error } = await supabase.functions.invoke('analyze-mood', {
-        body: { 
-          type: 'conflict-detection',
-          journalText: text 
-        }
-      });
-
-      if (error) {
-        console.error("Name extraction error:", error);
-        return;
-      }
-
-      if ((data?.hasConflict || data?.hasPositive) && data?.personName && data?.message) {
-        // Show send message modal after AI response modal is closed
-        setTimeout(() => {
-          setSendMessageData({
-            people: [data.personName],
-            intent: data.hasConflict ? "apologize" : "share",
-            mood: detectedMood,
-            entrySnippet: data.message, // Use the AI-generated message directly
-          });
-          setShowSendMessageModal(true);
-        }, 1500);
-      }
-    } catch (error) {
-      console.error("Failed to extract names:", error);
-      // Silently fail - don't block the user experience
-    }
-  };
 
   const handleDeleteEntry = async (id: string) => {
     const { error } = await supabase
