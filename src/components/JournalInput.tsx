@@ -3,11 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Mic, MicOff, Send } from "lucide-react";
+import { Mic, MicOff, Send, CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { getTodayLocal, getLocalDateString, parseLocalDate } from "@/utils/dateHelpers";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface JournalInputProps {
-  onSubmit: (text: string, manualMood?: string) => void;
+  onSubmit: (text: string, selectedDate: string, manualMood?: string) => void;
   isAnalyzing: boolean;
 }
 
@@ -15,6 +20,7 @@ const JournalInput = ({ onSubmit, isAnalyzing }: JournalInputProps) => {
   const [journalText, setJournalText] = useState("");
   const [manualMood, setManualMood] = useState<string>("");
   const [isRecording, setIsRecording] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
 
@@ -79,13 +85,44 @@ const JournalInput = ({ onSubmit, isAnalyzing }: JournalInputProps) => {
       return;
     }
 
-    onSubmit(journalText, manualMood || undefined);
+    const dateString = getLocalDateString(selectedDate);
+    onSubmit(journalText, dateString, manualMood || undefined);
     setJournalText("");
     setManualMood("");
+    setSelectedDate(new Date()); // Reset to today
   };
 
   return (
     <div className="space-y-6 animate-fade-in">
+      <div>
+        <Label htmlFor="date" className="text-sm font-medium text-foreground mb-2 block">
+          Entry date
+        </Label>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full justify-start text-left font-normal border-2",
+                !selectedDate && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(date) => date && setSelectedDate(date)}
+              initialFocus
+              className="p-3 pointer-events-auto"
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+
       <div>
         <Label htmlFor="journal" className="text-lg font-medium text-foreground mb-3 block">
           How was your day?

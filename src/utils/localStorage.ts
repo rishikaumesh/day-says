@@ -1,22 +1,18 @@
 export interface JournalEntry {
-  date: string;
+  date: string; // YYYY-MM-DD format (local date)
   journalText: string;
   mood: string;
   response: string;
   id: string;
+  timestamp: string; // ISO timestamp for ordering multiple entries on same day
 }
 
 const STORAGE_KEY = 'mindMirrorEntries';
 
 export const saveEntry = (entry: JournalEntry): void => {
   const entries = getEntries();
-  const existingIndex = entries.findIndex(e => e.date === entry.date);
-  
-  if (existingIndex >= 0) {
-    entries[existingIndex] = entry;
-  } else {
-    entries.push(entry);
-  }
+  // Allow multiple entries per day - just add the new entry
+  entries.push(entry);
   
   localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
 };
@@ -32,11 +28,11 @@ export const getEntries = (): JournalEntry[] => {
   }
 };
 
-export const deleteEntry = (date: string): void => {
-  const entries = getEntries().filter(e => e.date !== date);
+export const deleteEntry = (id: string): void => {
+  const entries = getEntries().filter(e => e.id !== id);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
 };
 
-export const getEntryByDate = (date: string): JournalEntry | undefined => {
-  return getEntries().find(e => e.date === date);
+export const getEntriesByDate = (date: string): JournalEntry[] => {
+  return getEntries().filter(e => e.date === date);
 };

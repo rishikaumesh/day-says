@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Trash2, Calendar } from "lucide-react";
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from "date-fns";
+import { getTodayLocal, parseLocalDate, isConsecutiveDay } from "@/utils/dateHelpers";
 
 interface MoodCalendarProps {
   entries: JournalEntry[];
-  onDeleteEntry: (date: string) => void;
+  onDeleteEntry: (id: string) => void;
 }
 
 const moodEmojis: Record<string, string> = {
@@ -27,8 +28,14 @@ const MoodCalendar = ({ entries, onDeleteEntry }: MoodCalendarProps) => {
   const monthEnd = endOfMonth(currentMonth);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  const getEntryForDate = (date: Date) => {
-    return entries.find(entry => isSameDay(parseISO(entry.date), date));
+  const getEntriesForDate = (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    return entries.filter(entry => entry.date === dateStr);
+  };
+  
+  const getFirstEntryForDate = (date: Date) => {
+    const dateEntries = getEntriesForDate(date);
+    return dateEntries.length > 0 ? dateEntries[0] : null;
   };
 
   const averageMood = () => {
@@ -46,19 +53,36 @@ const MoodCalendar = ({ entries, onDeleteEntry }: MoodCalendarProps) => {
   const currentStreak = () => {
     if (entries.length === 0) return 0;
     
-    const sortedEntries = [...entries].sort((a, b) => 
-      new Date(b.date).getTime() - new Date(a.date).getTime()
+    // Get unique dates that have at least one entry
+    const uniqueDates = Array.from(new Set(entries.map(e => e.date))).sort((a, b) => 
+      parseLocalDate(b).getTime() - parseLocalDate(a).getTime()
     );
     
-    let streak = 0;
-    const today = new Date();
+    const todayLocal = getTodayLocal();
     
-    for (let i = 0; i < sortedEntries.length; i++) {
-      const entryDate = parseISO(sortedEntries[i].date);
-      const expectedDate = new Date(today);
-      expectedDate.setDate(today.getDate() - i);
+    // If there's no entry for today, start from yesterday
+    let currentDate = uniqueDates.includes(todayLocal) ? todayLocal : null;
+    
+    if (!currentDate) {
+      // Check if the most recent entry is yesterday
+      if (uniqueDates.length === 0) return 0;
       
-      if (isSameDay(entryDate, expectedDate)) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = format(yesterday, 'yyyy-MM-dd');
+      
+      if (uniqueDates[0] !== yesterdayStr) return 0;
+      currentDate = yesterdayStr;
+    }
+    
+    let streak = 1;
+    
+    // Count consecutive days backwards
+    for (let i = uniqueDates.indexOf(currentDate) + 1; i < uniqueDates.length; i++) {
+      const prevDate = uniqueDates[i];
+      const expectedDate = uniqueDates[i - 1];
+      
+      if (isConsecutiveDay(prevDate, expectedDate)) {
         streak++;
       } else {
         break;
@@ -81,7 +105,7 @@ const MoodCalendar = ({ entries, onDeleteEntry }: MoodCalendarProps) => {
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-secondary/30 rounded-lg text-center transition-all duration-300 hover:scale-105">
               <p className="text-sm text-muted-foreground mb-1">Current Streak</p>
-              <p className="text-3xl font-bold text-primary">{currentStreak()} days</p>
+              <p className="text-3xl font-bold text-primary">🔥 {currentStreak()} days</p>
             </div>
             <div className="p-4 bg-accent/30 rounded-lg text-center transition-all duration-300 hover:scale-105">
               <p className="text-sm text-muted-foreground mb-1">Most Common</p>
@@ -106,28 +130,36 @@ const MoodCalendar = ({ entries, onDeleteEntry }: MoodCalendarProps) => {
             ))}
             
             {daysInMonth.map(date => {
-              const entry = getEntryForDate(date);
+              const dayEntries = getEntriesForDate(date);
+              const firstEntry = dayEntries.length > 0 ? dayEntries[0] : null;
               const isToday = isSameDay(date, new Date());
               
               return (
                 <Dialog key={date.toISOString()} onOpenChange={(open) => !open && setSelectedEntry(null)}>
                   <DialogTrigger asChild>
                     <button
-                      onClick={() => entry && setSelectedEntry(entry)}
+                      onClick={() => firstEntry && setSelectedEntry(firstEntry)}
                       className={`
-                        aspect-square rounded-lg p-2 text-sm transition-all duration-300
-                        ${entry ? 'bg-primary/10 hover:bg-primary/20 cursor-pointer hover:scale-110' : 'bg-muted/30'}
+                        aspect-square rounded-lg p-2 text-sm transition-all duration-300 relative
+                        ${firstEntry ? 'bg-primary/10 hover:bg-primary/20 cursor-pointer hover:scale-110' : 'bg-muted/30'}
                         ${isToday ? 'ring-2 ring-primary' : ''}
                       `}
-                      disabled={!entry}
+                      disabled={!firstEntry}
                     >
                       <div className="text-xs text-muted-foreground mb-1">
                         {format(date, 'd')}
                       </div>
-                      {entry && (
-                        <div className="text-2xl">
-                          {moodEmojis[entry.mood]}
-                        </div>
+                      {firstEntry && (
+                        <>
+                          <div className="text-2xl">
+                            {moodEmojis[firstEntry.mood]}
+                          </div>
+                          {dayEntries.length > 1 && (
+                            <div className="absolute top-1 right-1 text-xs bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center">
+                              {dayEntries.length}
+                            </div>
+                          )}
+                        </>
                       )}
                     </button>
                   </DialogTrigger>
@@ -136,7 +168,7 @@ const MoodCalendar = ({ entries, onDeleteEntry }: MoodCalendarProps) => {
                     <DialogContent className="max-w-md">
                       <DialogHeader>
                         <DialogTitle className="flex items-center justify-between">
-                          <span>{format(parseISO(selectedEntry.date), 'MMMM d, yyyy')}</span>
+                          <span>{format(parseLocalDate(selectedEntry.date), 'MMMM d, yyyy')}</span>
                           <span className="text-3xl">{moodEmojis[selectedEntry.mood]}</span>
                         </DialogTitle>
                       </DialogHeader>
@@ -156,7 +188,7 @@ const MoodCalendar = ({ entries, onDeleteEntry }: MoodCalendarProps) => {
                           variant="destructive"
                           size="sm"
                           onClick={() => {
-                            onDeleteEntry(selectedEntry.date);
+                            onDeleteEntry(selectedEntry.id);
                             setSelectedEntry(null);
                           }}
                           className="w-full"

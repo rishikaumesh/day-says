@@ -14,7 +14,7 @@ const Index = () => {
     setEntries(getEntries());
   }, []);
 
-  const handleSubmit = async (journalText: string, manualMood?: string) => {
+  const handleSubmit = async (journalText: string, selectedDate: string, manualMood?: string) => {
     setIsAnalyzing(true);
 
     try {
@@ -45,10 +45,11 @@ const Index = () => {
 
       const newEntry: JournalEntry = {
         id: crypto.randomUUID(),
-        date: new Date().toISOString().split('T')[0],
+        date: selectedDate, // Use the selected local date
         journalText,
         mood,
         response,
+        timestamp: new Date().toISOString(),
       };
 
       saveEntry(newEntry);
@@ -80,8 +81,8 @@ const Index = () => {
     }
   };
 
-  const handleDeleteEntry = (date: string) => {
-    deleteEntry(date);
+  const handleDeleteEntry = (id: string) => {
+    deleteEntry(id);
     setEntries(getEntries());
     toast({
       title: "Entry Deleted",
