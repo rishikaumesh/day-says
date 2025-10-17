@@ -33,6 +33,7 @@ const Dashboard = () => {
   const [showResponseModal, setShowResponseModal] = useState(false);
   const [conflictData, setConflictData] = useState<{
     personName: string;
+    interactionType: "conflict" | "positive";
   } | null>(null);
   const [showConflictModal, setShowConflictModal] = useState(false);
   const [sendMessageData, setSendMessageData] = useState<{
@@ -217,26 +218,15 @@ const Dashboard = () => {
         return;
       }
 
-      // Handle both conflicts and positive interactions
-      if ((data?.hasConflict || data?.hasPositive) && data?.personName && data?.message) {
-        if (data.hasConflict) {
-          // Show conflict modal for conflicts
-          setTimeout(() => {
-            setConflictData({ personName: data.personName });
-            setShowConflictModal(true);
-          }, 1000);
-        } else if (data.hasPositive) {
-          // Show send message modal for positive interactions
-          setTimeout(() => {
-            setSendMessageData({
-              people: [data.personName],
-              intent: "share",
-              mood: "happy",
-              entrySnippet: data.message,
-            });
-            setShowSendMessageModal(true);
-          }, 1500);
-        }
+      // Handle both conflicts and positive interactions with the same modal
+      if ((data?.hasConflict || data?.hasPositive) && data?.personName) {
+        setTimeout(() => {
+          setConflictData({ 
+            personName: data.personName,
+            interactionType: data.hasConflict ? "conflict" : "positive"
+          });
+          setShowConflictModal(true);
+        }, 1000);
       }
     } catch (error) {
       console.error("Failed to detect conflict:", error);
@@ -407,6 +397,7 @@ const Dashboard = () => {
       {conflictData && (
         <ConflictResolutionModal
           personName={conflictData.personName}
+          interactionType={conflictData.interactionType}
           isOpen={showConflictModal}
           onClose={() => {
             setShowConflictModal(false);

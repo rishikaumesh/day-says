@@ -12,10 +12,10 @@ serve(async (req) => {
   }
 
   try {
-    const { journalText, userId, type, entries, personName, actionType, prompt } = await req.json();
+    const { journalText, userId, type, entries, personName, actionType, interactionType, prompt } = await req.json();
 
-    // Handle conflict resolution message generation
-    if (type === "conflict-resolution") {
+    // Handle message generation for both conflicts and positive interactions
+    if (type === "message-generation") {
       const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
       if (!LOVABLE_API_KEY) {
         throw new Error("LOVABLE_API_KEY is not configured");

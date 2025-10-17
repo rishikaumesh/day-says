@@ -15,18 +15,26 @@ interface ConflictResolutionModalProps {
   personName: string;
   isOpen: boolean;
   onClose: () => void;
+  interactionType: "conflict" | "positive";
 }
 
-const ACTIONS = [
+const CONFLICT_ACTIONS = [
   { id: "apologize", label: "Apologize and mend things", icon: "💙" },
   { id: "space", label: "Give space and reflect", icon: "🌙" },
   { id: "talk", label: "Ask to talk", icon: "💬" },
+];
+
+const POSITIVE_ACTIONS = [
+  { id: "share-joy", label: "Share the good vibes", icon: "✨" },
+  { id: "plan-hangout", label: "Plan another hangout", icon: "🎉" },
+  { id: "thank", label: "Express gratitude", icon: "💛" },
 ];
 
 export const ConflictResolutionModal = ({
   personName,
   isOpen,
   onClose,
+  interactionType,
 }: ConflictResolutionModalProps) => {
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [generatedMessage, setGeneratedMessage] = useState<string>("");
@@ -38,17 +46,26 @@ export const ConflictResolutionModal = ({
     setSelectedAction(actionId);
 
     try {
-      const prompts: Record<string, string> = {
+      const conflictPrompts: Record<string, string> = {
         apologize: `Generate a sincere, heartfelt apology message to ${personName} after a conflict. Make it personal, genuine, and brief (2-3 sentences). Focus on taking responsibility and wanting to make things right.`,
         space: `Generate a thoughtful message to ${personName} suggesting some space to reflect after a conflict. Make it respectful, caring, and brief (2-3 sentences). Express that you value the relationship and need time to process.`,
         talk: `Generate a gentle message to ${personName} asking to talk about a recent conflict. Make it open, non-confrontational, and brief (2-3 sentences). Express willingness to listen and work things out.`,
       };
 
+      const positivePrompts: Record<string, string> = {
+        "share-joy": `Generate a warm, casual message to ${personName} expressing how much you enjoyed spending time together. Make it friendly, genuine, and brief (2-3 sentences). Include a playful or fun tone.`,
+        "plan-hangout": `Generate an enthusiastic message to ${personName} suggesting to hang out again soon. Make it casual, fun, and brief (2-3 sentences). Show genuine excitement about another meetup.`,
+        "thank": `Generate a heartfelt thank you message to ${personName} for the great time together. Make it warm, appreciative, and brief (2-3 sentences). Express how much it meant to you.`,
+      };
+
+      const prompts = interactionType === "conflict" ? conflictPrompts : positivePrompts;
+
       const { data, error } = await supabase.functions.invoke("analyze-mood", {
         body: {
-          type: "conflict-resolution",
+          type: "message-generation",
           personName,
           actionType: actionId,
+          interactionType,
           prompt: prompts[actionId],
         },
       });
@@ -116,7 +133,9 @@ export const ConflictResolutionModal = ({
           <DialogTitle className="text-xl sm:text-2xl">
             {selectedAction
               ? "Your Message"
-              : `Looks like you had a conflict with ${personName} 💔`}
+              : interactionType === "conflict"
+              ? `Looks like you had a conflict with ${personName} 💔`
+              : `You had a great time with ${personName} ✨`}
           </DialogTitle>
           <DialogDescription className="text-sm sm:text-base">
             {selectedAction
@@ -128,7 +147,7 @@ export const ConflictResolutionModal = ({
         <div className="space-y-4">
           {!selectedAction ? (
             <div className="grid gap-3">
-              {ACTIONS.map((action) => (
+              {(interactionType === "conflict" ? CONFLICT_ACTIONS : POSITIVE_ACTIONS).map((action) => (
                 <Button
                   key={action.id}
                   variant="outline"
