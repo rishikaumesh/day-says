@@ -144,12 +144,11 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
         <CardHeader className="p-4 sm:p-6">
           <CardTitle className="text-foreground text-lg sm:text-xl">{format(currentMonth, "MMMM yyyy")}</CardTitle>
         </CardHeader>
-        <CardContent className="p-2 sm:p-6">
-          <div className="grid grid-cols-7 gap-1 sm:gap-2">
+        <CardContent className="p-3 sm:p-6">
+          <div className="grid grid-cols-7 gap-[2px] sm:gap-2">
             {["S", "M", "T", "W", "T", "F", "S"].map((day, i) => (
-              <div key={i} className="text-center text-xs sm:text-sm font-medium text-muted-foreground p-1 sm:p-2">
-                <span className="hidden sm:inline">{["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][i]}</span>
-                <span className="sm:hidden">{day}</span>
+              <div key={i} className="text-center text-[10px] sm:text-sm font-medium text-muted-foreground py-1 sm:p-2">
+                {day}
               </div>
             ))}
 
@@ -181,29 +180,29 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
                             }
                           }}
                           className={`
-                            aspect-square rounded-lg p-1 sm:p-2 text-sm transition-all duration-300 relative min-h-[48px] sm:min-h-0
-                            ${dayEntries.length > 0 ? `${getGreenShade(dayEntries.length)} hover:opacity-80 cursor-pointer hover:scale-110` : "bg-muted/30"}
-                            ${isToday ? "ring-2 ring-primary" : ""}
+                            aspect-square rounded-md sm:rounded-lg p-0.5 sm:p-2 text-sm transition-all duration-300 relative w-full
+                            ${dayEntries.length > 0 ? `${getGreenShade(dayEntries.length)} hover:opacity-80 cursor-pointer sm:hover:scale-110` : "bg-muted/30"}
+                            ${isToday ? "ring-1 sm:ring-2 ring-primary" : ""}
                           `}
                           disabled={!firstEntry}
                         >
-                          <div className={`text-xs mb-0 sm:mb-1 ${dayEntries.length > 2 ? 'text-green-900 dark:text-green-100' : 'text-muted-foreground'}`}>
+                          <div className={`text-[10px] sm:text-xs ${dayEntries.length > 2 ? 'text-green-900 dark:text-green-100' : 'text-muted-foreground'}`}>
                             {format(date, "d")}
                           </div>
                           {firstEntry && (
-                            <div className="text-xl sm:text-2xl">{moodEmojis[firstEntry.mood]}</div>
+                            <div className="text-base sm:text-2xl leading-none mt-0.5 sm:mt-1">{moodEmojis[firstEntry.mood]}</div>
                           )}
                         </button>
                       </HoverCardTrigger>
                       {firstEntry && (
-                        <HoverCardContent className="w-80 animate-fade-in" side="top">
+                        <HoverCardContent className="w-[90vw] sm:w-80 animate-fade-in" side="top">
                           <div className="space-y-2">
                             <div className="flex items-center gap-2">
-                              <span className="text-2xl">{moodEmojis[firstEntry.mood]}</span>
-                              <span className="font-medium text-sm">{format(date, "MMM d, yyyy")}</span>
+                              <span className="text-xl sm:text-2xl">{moodEmojis[firstEntry.mood]}</span>
+                              <span className="font-medium text-xs sm:text-sm">{format(date, "MMM d, yyyy")}</span>
                             </div>
-                            <div className="p-3 bg-accent/20 rounded-lg">
-                              <p className="text-sm text-foreground/90 italic line-clamp-3">
+                            <div className="p-2 sm:p-3 bg-accent/20 rounded-lg">
+                              <p className="text-xs sm:text-sm text-foreground/90 italic line-clamp-3">
                                 {firstEntry.reflection}
                               </p>
                             </div>
