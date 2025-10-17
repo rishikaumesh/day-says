@@ -31,7 +31,9 @@ const moodEmojis: Record<string, string> = {
 };
 
 const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProps) => {
-  const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedEntries, setSelectedEntries] = useState<JournalEntry[]>([]);
+  const [currentEntryIndex, setCurrentEntryIndex] = useState(0);
   const [currentMonth] = useState(new Date());
   const [weeklySummary, setWeeklySummary] = useState<string>("");
   const [loadingSummary, setLoadingSummary] = useState(false);
@@ -131,10 +133,25 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
               const isToday = isSameDay(date, new Date());
 
               return (
-                <Dialog key={date.toISOString()} onOpenChange={(open) => !open && setSelectedEntry(null)}>
+                <Dialog 
+                  key={date.toISOString()} 
+                  onOpenChange={(open) => {
+                    if (!open) {
+                      setSelectedDate(null);
+                      setSelectedEntries([]);
+                      setCurrentEntryIndex(0);
+                    }
+                  }}
+                >
                   <DialogTrigger asChild>
                     <button
-                      onClick={() => firstEntry && setSelectedEntry(firstEntry)}
+                      onClick={() => {
+                        if (dayEntries.length > 0) {
+                          setSelectedDate(date);
+                          setSelectedEntries(dayEntries);
+                          setCurrentEntryIndex(0);
+                        }
+                      }}
                       className={`
                         aspect-square rounded-lg p-2 text-sm transition-all duration-300 relative
                         ${firstEntry ? "bg-primary/10 hover:bg-primary/20 cursor-pointer hover:scale-110" : "bg-muted/30"}
@@ -156,32 +173,69 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
                     </button>
                   </DialogTrigger>
 
-                  {selectedEntry && (
+                  {selectedEntries.length > 0 && selectedDate && (
                     <DialogContent className="max-w-md">
                       <DialogHeader>
                         <DialogTitle className="flex items-center justify-between">
-                          <span>{format(parseLocalDate(selectedEntry.entry_date), "MMMM d, yyyy")}</span>
-                          <span className="text-3xl">{moodEmojis[selectedEntry.mood]}</span>
+                          <span>{format(selectedDate, "MMMM d, yyyy")}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-3xl">{moodEmojis[selectedEntries[currentEntryIndex].mood]}</span>
+                            {selectedEntries.length > 1 && (
+                              <span className="text-sm text-muted-foreground">
+                                {currentEntryIndex + 1}/{selectedEntries.length}
+                              </span>
+                            )}
+                          </div>
                         </DialogTitle>
                       </DialogHeader>
 
                       <div className="space-y-4">
+                        {selectedEntries.length > 1 && (
+                          <div className="flex gap-2 justify-center">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setCurrentEntryIndex(Math.max(0, currentEntryIndex - 1))}
+                              disabled={currentEntryIndex === 0}
+                            >
+                              Previous
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setCurrentEntryIndex(Math.min(selectedEntries.length - 1, currentEntryIndex + 1))}
+                              disabled={currentEntryIndex === selectedEntries.length - 1}
+                            >
+                              Next
+                            </Button>
+                          </div>
+                        )}
+
                         <div>
                           <h4 className="font-medium text-sm text-muted-foreground mb-2">Your Entry</h4>
-                          <p className="text-foreground whitespace-pre-wrap">{selectedEntry.entry_text}</p>
+                          <p className="text-foreground whitespace-pre-wrap">{selectedEntries[currentEntryIndex].entry_text}</p>
                         </div>
 
                         <div className="p-4 bg-accent/20 rounded-lg">
                           <h4 className="font-medium text-sm text-muted-foreground mb-2">Reflection</h4>
-                          <p className="text-foreground italic">{selectedEntry.reflection}</p>
+                          <p className="text-foreground italic">{selectedEntries[currentEntryIndex].reflection}</p>
                         </div>
 
                         <Button
                           variant="destructive"
                           size="sm"
                           onClick={() => {
-                            onDeleteEntry(selectedEntry.id);
-                            setSelectedEntry(null);
+                            const entryToDelete = selectedEntries[currentEntryIndex];
+                            onDeleteEntry(entryToDelete.id);
+                            const newEntries = selectedEntries.filter((_, idx) => idx !== currentEntryIndex);
+                            if (newEntries.length > 0) {
+                              setSelectedEntries(newEntries);
+                              setCurrentEntryIndex(Math.min(currentEntryIndex, newEntries.length - 1));
+                            } else {
+                              setSelectedDate(null);
+                              setSelectedEntries([]);
+                              setCurrentEntryIndex(0);
+                            }
                           }}
                           className="w-full"
                         >
