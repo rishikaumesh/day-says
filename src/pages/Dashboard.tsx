@@ -235,8 +235,11 @@ const Dashboard = () => {
 
   const extractNamesAndIntent = async (text: string, detectedMood: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('extract-names-intent', {
-        body: { journalText: text }
+      const { data, error } = await supabase.functions.invoke('analyze-mood', {
+        body: { 
+          type: 'conflict-detection',
+          journalText: text 
+        }
       });
 
       if (error) {
@@ -244,24 +247,14 @@ const Dashboard = () => {
         return;
       }
 
-      if (data?.isCrisis) {
-        // Don't show message modal for crisis keywords
-        toast({
-          title: "Support Resources",
-          description: "If you're in crisis, please reach out to a mental health professional or crisis hotline.",
-          variant: "default",
-        });
-        return;
-      }
-
-      if (data?.people && data.people.length > 0) {
+      if ((data?.hasConflict || data?.hasPositive) && data?.personName && data?.message) {
         // Show send message modal after AI response modal is closed
         setTimeout(() => {
           setSendMessageData({
-            people: data.people,
-            intent: data.intent || "none",
+            people: [data.personName],
+            intent: data.hasConflict ? "apologize" : "share",
             mood: detectedMood,
-            entrySnippet: text,
+            entrySnippet: data.message, // Use the AI-generated message directly
           });
           setShowSendMessageModal(true);
         }, 1500);

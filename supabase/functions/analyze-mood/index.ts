@@ -186,9 +186,29 @@ Entry: "I'm feeling low today. Didn't really talk to anyone."
         ?.replace(/```json\n?/g, "")
         .replace(/```\n?/g, "")
         .trim();
-      const result = JSON.parse(cleanContent || '{"hasConflict":false}');
+      const parsed = JSON.parse(cleanContent || '{"hasConflict":false}');
 
-      return new Response(JSON.stringify(result), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      // Return the result with the message included
+      if (parsed.hasConflict || parsed.hasPositive) {
+        return new Response(
+          JSON.stringify({
+            hasConflict: parsed.hasConflict || false,
+            hasPositive: parsed.hasPositive || false,
+            personName: parsed.personName || null,
+            conflictType: parsed.conflictType || null,
+            message: parsed.message || null,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } else {
+        return new Response(
+          JSON.stringify({
+            hasConflict: false,
+            hasPositive: false,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     if (type === "weekly-reflection") {

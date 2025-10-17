@@ -40,19 +40,19 @@ export const SendMessageModal = ({
   entrySnippet,
 }: SendMessageModalProps) => {
   const [selectedPerson, setSelectedPerson] = useState(people[0] || "");
-  const [draft, setDraft] = useState(() => 
-    composeDraft(people[0] || "", intent, mood, entrySnippet)
-  );
+  // Use entrySnippet as the draft message directly (it's the AI-generated message)
+  const [draft, setDraft] = useState(entrySnippet);
   const [isSharing, setIsSharing] = useState(false);
   const { toast } = useToast();
 
   const handlePersonChange = (person: string) => {
     setSelectedPerson(person);
-    setDraft(composeDraft(person, intent, mood, entrySnippet));
+    // Keep the same message when switching persons
+    setDraft(entrySnippet);
   };
 
   const handleResetDraft = () => {
-    setDraft(composeDraft(selectedPerson, intent, mood, entrySnippet));
+    setDraft(entrySnippet);
   };
 
   const handleShare = async () => {
