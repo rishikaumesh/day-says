@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
-import { CalendarIcon, Mic, MicOff } from "lucide-react";
+import { CalendarIcon, Mic, MicOff, Plus } from "lucide-react";
 import MoodCalendar from "@/components/MoodCalendar";
 import { AIResponseModal } from "@/components/AIResponseModal";
 import { ConflictResolutionModal } from "@/components/ConflictResolutionModal";
@@ -49,6 +49,7 @@ const Dashboard = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const newEntryRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -257,7 +258,7 @@ const Dashboard = () => {
         <header className="mb-6 sm:mb-12 animate-fade-in">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-1 sm:mb-2">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-playfair text-foreground mb-1 sm:mb-2">
                 Mind Mirror 🪞
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground">
@@ -290,9 +291,9 @@ const Dashboard = () => {
           </div>
         </header>
 
-        <div className="grid lg:grid-cols-2 gap-4 sm:gap-8">
-          <div className="bg-card border-2 border-border rounded-2xl p-4 sm:p-6 shadow-xl">
-            <h2 className="text-xl sm:text-2xl font-bold mb-4">New Entry</h2>
+        <div className="grid lg:grid-cols-2 gap-4 sm:gap-8 mb-20">
+          <div ref={newEntryRef} className="bg-card border-2 border-border rounded-2xl p-4 sm:p-6 md:p-8 shadow-xl">
+            <h2 className="text-xl sm:text-2xl font-bold font-playfair mb-6">New Entry</h2>
             
             <div className="space-y-4">
               <div>
@@ -317,13 +318,13 @@ const Dashboard = () => {
                 </Popover>
               </div>
 
-              <div>
-                <Label className="text-base">How are you feeling today?</Label>
+              <div className="space-y-2">
+                <Label className="text-base font-medium">How are you feeling today?</Label>
                 <Textarea
                   value={journalText}
                   onChange={(e) => setJournalText(e.target.value)}
                   placeholder="Write about your day..."
-                  className="min-h-[150px] sm:min-h-[180px] resize-none text-base"
+                  className="min-h-[150px] sm:min-h-[200px] resize-none text-base"
                 />
               </div>
 
@@ -427,6 +428,17 @@ const Dashboard = () => {
           entrySnippet={sendMessageData.entrySnippet}
         />
       )}
+
+      {/* Floating New Entry Button */}
+      <Button
+        onClick={() => {
+          newEntryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }}
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl hover:scale-110 transition-transform z-50"
+        size="icon"
+      >
+        <Plus className="h-6 w-6" />
+      </Button>
     </div>
   );
 };
