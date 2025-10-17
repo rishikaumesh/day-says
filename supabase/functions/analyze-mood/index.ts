@@ -116,7 +116,7 @@ Entry: "Had an argument with Neha earlier."
   "hasPositive": false,
   "personName": "Neha",
   "conflictType": "argument",
-  "message": "Hey Neha. I'm really sorry about earlier, I didn’t mean for it to turn out like that."
+  "message": "Hey Neha. I'm really sorry about earlier, I didn't mean for it to turn out like that."
 }
 
 Entry: "I went shopping with Rishika and it was a great time!"
