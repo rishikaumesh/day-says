@@ -1,6 +1,5 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { journalText, userId } = await req.json();
+    const { journalText } = await req.json();
     
     if (!journalText || journalText.trim().length === 0) {
       return new Response(
@@ -29,64 +28,6 @@ serve(async (req) => {
 
     console.log('Analyzing mood for journal entry...');
 
-    let systemPrompt = `You are an empathetic journaling companion. Analyze the emotional tone of journal entries and provide gentle, encouraging responses.
-
-Your task:
-1. Classify the mood into EXACTLY one of: Happy, Sad, Exciting, Nervous, Neutral
-2. Provide a 1-2 sentence gentle, encouraging response that acknowledges their feelings
-
-CRITICAL: You MUST respond with ONLY valid JSON in this exact format:
-{
-  "mood": "Happy",
-  "response": "That sounds like a wonderful moment. Try to hold on to that feeling 💛."
-}
-
-Do not include any text before or after the JSON. The mood must be one of the five options listed above.`;
-
-    // If userId is provided, fetch recent entries for personalization
-    if (userId) {
-      const supabaseClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-      );
-
-      const { data: profile } = await supabaseClient
-        .from('profiles')
-        .select('name, journaling_goals')
-        .eq('id', userId)
-        .single();
-
-      const { data: recentEntries } = await supabaseClient
-        .from('journal_entries')
-        .select('mood, entry_text, created_at')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (profile || recentEntries?.length) {
-        systemPrompt += '\n\nContext about the user:';
-        
-        if (profile?.name) {
-          systemPrompt += `\n- Their name is ${profile.name}`;
-        }
-        
-        if (profile?.journaling_goals) {
-          systemPrompt += `\n- Their journaling goals: ${profile.journaling_goals}`;
-        }
-        
-        if (recentEntries?.length) {
-          const moodCounts: Record<string, number> = {};
-          recentEntries.forEach(e => {
-            moodCounts[e.mood] = (moodCounts[e.mood] || 0) + 1;
-          });
-          const dominantMood = Object.entries(moodCounts).reduce((a, b) => a[1] > b[1] ? a : b)[0];
-          systemPrompt += `\n- Recent mood pattern: mostly ${dominantMood} (${recentEntries.length} recent entries)`;
-        }
-
-        systemPrompt += '\n\nUse this context to make your response more personal and relevant to their journey.';
-      }
-    }
-
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -98,7 +39,19 @@ Do not include any text before or after the JSON. The mood must be one of the fi
         messages: [
           {
             role: 'system',
-            content: systemPrompt
+            content: `You are an empathetic journaling companion. Analyze the emotional tone of journal entries and provide gentle, encouraging responses.
+
+Your task:
+1. Classify the mood into EXACTLY one of: Happy, Sad, Excited, Nervous, Neutral
+2. Provide a 1-2 sentence gentle, encouraging response that acknowledges their feelings
+
+CRITICAL: You MUST respond with ONLY valid JSON in this exact format:
+{
+  "mood": "Happy",
+  "response": "That sounds like a wonderful moment. Try to hold on to that feeling 💛."
+}
+
+Do not include any text before or after the JSON. The mood must be one of the five options listed above.`
           },
           {
             role: 'user',
@@ -167,7 +120,7 @@ Do not include any text before or after the JSON. The mood must be one of the fi
     }
 
     // Validate mood is one of the expected values
-    const validMoods = ['Happy', 'Sad', 'Exciting', 'Nervous', 'Neutral'];
+    const validMoods = ['Happy', 'Sad', 'Excited', 'Nervous', 'Neutral'];
     if (!validMoods.includes(result.mood)) {
       result.mood = 'Neutral';
     }
