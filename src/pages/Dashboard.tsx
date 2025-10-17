@@ -11,6 +11,7 @@ import { CalendarIcon, Mic, MicOff } from "lucide-react";
 import MoodCalendar from "@/components/MoodCalendar";
 import { AIResponseModal } from "@/components/AIResponseModal";
 import { ConflictResolutionModal } from "@/components/ConflictResolutionModal";
+import { SendMessageModal } from "@/components/SendMessageModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -34,6 +35,13 @@ const Dashboard = () => {
     personName: string;
   } | null>(null);
   const [showConflictModal, setShowConflictModal] = useState(false);
+  const [sendMessageData, setSendMessageData] = useState<{
+    people: string[];
+    intent: "share" | "apologize" | "none";
+    mood: string | null;
+    entrySnippet: string;
+  } | null>(null);
+  const [showSendMessageModal, setShowSendMessageModal] = useState(false);
   
   const { user, signOut } = useAuth();
   const { toast } = useToast();
@@ -172,6 +180,9 @@ const Dashboard = () => {
       // Check for conflicts (run in parallel, don't block success)
       detectConflict(journalText);
 
+      // Extract names and intent for message sharing
+      extractNamesAndIntent(journalText, mood);
+
       setJournalText("");
       setManualMood(undefined);
       loadEntries();
@@ -218,6 +229,45 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.error("Failed to detect conflict:", error);
+      // Silently fail - don't block the user experience
+    }
+  };
+
+  const extractNamesAndIntent = async (text: string, detectedMood: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('extract-names-intent', {
+        body: { journalText: text }
+      });
+
+      if (error) {
+        console.error("Name extraction error:", error);
+        return;
+      }
+
+      if (data?.isCrisis) {
+        // Don't show message modal for crisis keywords
+        toast({
+          title: "Support Resources",
+          description: "If you're in crisis, please reach out to a mental health professional or crisis hotline.",
+          variant: "default",
+        });
+        return;
+      }
+
+      if (data?.people && data.people.length > 0) {
+        // Show send message modal after AI response modal is closed
+        setTimeout(() => {
+          setSendMessageData({
+            people: data.people,
+            intent: data.intent || "none",
+            mood: detectedMood,
+            entrySnippet: text,
+          });
+          setShowSendMessageModal(true);
+        }, 1500);
+      }
+    } catch (error) {
+      console.error("Failed to extract names:", error);
       // Silently fail - don't block the user experience
     }
   };
@@ -389,6 +439,20 @@ const Dashboard = () => {
             setShowConflictModal(false);
             setConflictData(null);
           }}
+        />
+      )}
+
+      {sendMessageData && (
+        <SendMessageModal
+          isOpen={showSendMessageModal}
+          onClose={() => {
+            setShowSendMessageModal(false);
+            setSendMessageData(null);
+          }}
+          people={sendMessageData.people}
+          intent={sendMessageData.intent}
+          mood={sendMessageData.mood}
+          entrySnippet={sendMessageData.entrySnippet}
         />
       )}
     </div>
