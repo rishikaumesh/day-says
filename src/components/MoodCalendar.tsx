@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { JournalEntry } from "@/utils/localStorage";
+interface JournalEntry {
+  id: string;
+  entry_date: string;
+  entry_text: string;
+  mood: string;
+  reflection: string;
+  created_at: string;
+}
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -31,7 +38,7 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
 
   const getEntriesForDate = (date: Date) => {
     const dateStr = format(date, "yyyy-MM-dd");
-    return entries.filter((entry) => entry.date === dateStr);
+    return entries.filter((entry) => entry.entry_date === dateStr);
   };
 
   const getFirstEntryForDate = (date: Date) => {
@@ -55,7 +62,7 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
     if (entries.length === 0) return 0;
 
     // Get unique dates that have at least one entry
-    const uniqueDates = Array.from(new Set(entries.map((e) => e.date))).sort(
+    const uniqueDates = Array.from(new Set(entries.map((e) => e.entry_date))).sort(
       (a, b) => parseLocalDate(b).getTime() - parseLocalDate(a).getTime(),
     );
 
@@ -163,7 +170,7 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
                     <DialogContent className="max-w-md">
                       <DialogHeader>
                         <DialogTitle className="flex items-center justify-between">
-                          <span>{format(parseLocalDate(selectedEntry.date), "MMMM d, yyyy")}</span>
+                          <span>{format(parseLocalDate(selectedEntry.entry_date), "MMMM d, yyyy")}</span>
                           <span className="text-3xl">{moodEmojis[selectedEntry.mood]}</span>
                         </DialogTitle>
                       </DialogHeader>
@@ -171,12 +178,12 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
                       <div className="space-y-4">
                         <div>
                           <h4 className="font-medium text-sm text-muted-foreground mb-2">Your Entry</h4>
-                          <p className="text-foreground whitespace-pre-wrap">{selectedEntry.journalText}</p>
+                          <p className="text-foreground whitespace-pre-wrap">{selectedEntry.entry_text}</p>
                         </div>
 
                         <div className="p-4 bg-accent/20 rounded-lg">
                           <h4 className="font-medium text-sm text-muted-foreground mb-2">Reflection</h4>
-                          <p className="text-foreground italic">{selectedEntry.response}</p>
+                          <p className="text-foreground italic">{selectedEntry.reflection}</p>
                         </div>
 
                         <Button

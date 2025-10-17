@@ -14,7 +14,147 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      journal_entries: {
+        Row: {
+          created_at: string | null
+          entry_audio_url: string | null
+          entry_date: string
+          entry_text: string
+          id: string
+          mood: Database["public"]["Enums"]["mood_type"]
+          reflection: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          entry_audio_url?: string | null
+          entry_date?: string
+          entry_text: string
+          id?: string
+          mood: Database["public"]["Enums"]["mood_type"]
+          reflection: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          entry_audio_url?: string | null
+          entry_date?: string
+          entry_text?: string
+          id?: string
+          mood?: Database["public"]["Enums"]["mood_type"]
+          reflection?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journal_entries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          id: string
+          journaling_goals: string | null
+          name: string | null
+          onboarding_completed: boolean | null
+          preferences: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          journaling_goals?: string | null
+          name?: string | null
+          onboarding_completed?: boolean | null
+          preferences?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          journaling_goals?: string | null
+          name?: string | null
+          onboarding_completed?: boolean | null
+          preferences?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_habits: {
+        Row: {
+          created_at: string | null
+          description: string
+          habit_type: string
+          id: string
+          location_preference: string | null
+          time_preference: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          habit_type: string
+          id?: string
+          location_preference?: string | null
+          time_preference?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          habit_type?: string
+          id?: string
+          location_preference?: string | null
+          time_preference?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_habits_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_interests: {
+        Row: {
+          created_at: string | null
+          id: string
+          interest: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          interest: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          interest?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_interests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +163,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      mood_type: "happy" | "sad" | "exciting" | "nervous" | "neutral"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +290,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      mood_type: ["happy", "sad", "exciting", "nervous", "neutral"],
+    },
   },
 } as const

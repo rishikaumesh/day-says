@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { journalText } = await req.json();
+    const { journalText, userId } = await req.json();
     
     if (!journalText || journalText.trim().length === 0) {
       return new Response(
@@ -28,18 +28,7 @@ serve(async (req) => {
 
     console.log('Analyzing mood for journal entry...');
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          {
-            role: 'system',
-            content: `You are an empathetic journaling companion. Analyze the emotional tone of journal entries and provide gentle, encouraging responses.
+    let systemPrompt = `You are an empathetic journaling companion. Analyze the emotional tone of journal entries and provide gentle, encouraging responses.
 
 Your task:
 1. Classify the mood into EXACTLY one of: Happy, Sad, Excited, Nervous, Neutral
@@ -51,7 +40,69 @@ CRITICAL: You MUST respond with ONLY valid JSON in this exact format:
   "response": "That sounds like a wonderful moment. Try to hold on to that feeling 💛."
 }
 
-Do not include any text before or after the JSON. The mood must be one of the five options listed above.`
+Do not include any text before or after the JSON. The mood must be one of the five options listed above.`;
+
+    if (userId) {
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+        
+        const profileResponse = await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}&select=name,journaling_goals`, {
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`
+          }
+        });
+        
+        const profiles = await profileResponse.json();
+        const profile = profiles[0];
+
+        const interestsResponse = await fetch(`${supabaseUrl}/rest/v1/user_interests?user_id=eq.${userId}&select=interest`, {
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`
+          }
+        });
+        const interests = await interestsResponse.json();
+
+        const habitsResponse = await fetch(`${supabaseUrl}/rest/v1/user_habits?user_id=eq.${userId}&select=description`, {
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`
+          }
+        });
+        const habits = await habitsResponse.json();
+
+        if (profile || interests.length > 0 || habits.length > 0) {
+          const name = profile?.name || 'there';
+          const interestsList = interests.map((i: any) => i.interest).join(', ');
+          const habitsList = habits.map((h: any) => h.description).join(', ');
+
+          systemPrompt = `You are an empathetic AI companion for ${name}. ${interestsList ? `Their interests: ${interestsList}.` : ''} ${habitsList ? `Things that help them: ${habitsList}.` : ''} When responding, use their name naturally and suggest activities from their interests when appropriate. 
+
+Analyze the mood and provide a warm, personalized response (1-2 sentences). Return JSON with mood (Happy/Sad/Excited/Nervous/Neutral) and response. Format:
+{
+  "mood": "Happy",
+  "response": "That sounds wonderful, ${name}!"
+}`;
+        }
+      } catch (error) {
+        console.log('Could not fetch user context, using default prompt:', error);
+      }
+    }
+
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt
           },
           {
             role: 'user',
