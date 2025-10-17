@@ -38,12 +38,12 @@ All colors MUST be HSL.
     --accent-deep: 142 45% 35%;
     --accent-deep-foreground: 0 0% 100%;
     
-    /* Mood-specific gradients */
-    --mood-happy: linear-gradient(135deg, hsl(50 90% 60%), hsl(142 32% 48%));
-    --mood-sad: linear-gradient(135deg, hsl(210 40% 60%), hsl(220 30% 50%));
-    --mood-exciting: linear-gradient(135deg, hsl(340 80% 60%), hsl(30 90% 55%));
-    --mood-nervous: linear-gradient(135deg, hsl(270 30% 65%), hsl(200 35% 55%));
-    --mood-neutral: linear-gradient(135deg, hsl(150 8% 70%), hsl(150 8% 55%));
+    /* Mood-specific gradients - Pastel colors */
+    --mood-happy: linear-gradient(135deg, hsl(50 70% 75%), hsl(142 40% 70%));
+    --mood-sad: linear-gradient(135deg, hsl(210 50% 75%), hsl(220 45% 70%));
+    --mood-exciting: linear-gradient(135deg, hsl(340 60% 75%), hsl(30 70% 70%));
+    --mood-nervous: linear-gradient(135deg, hsl(270 40% 75%), hsl(200 45% 70%));
+    --mood-neutral: linear-gradient(135deg, hsl(150 20% 75%), hsl(150 20% 70%));
 
     --destructive: 0 70% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -97,12 +97,12 @@ All colors MUST be HSL.
     --accent-deep: 142 40% 45%;
     --accent-deep-foreground: 0 0% 100%;
     
-    /* Mood-specific gradients - dark mode */
-    --mood-happy: linear-gradient(135deg, hsl(50 70% 50%), hsl(142 28% 55%));
-    --mood-sad: linear-gradient(135deg, hsl(210 35% 50%), hsl(220 25% 40%));
-    --mood-exciting: linear-gradient(135deg, hsl(340 70% 50%), hsl(30 80% 45%));
-    --mood-nervous: linear-gradient(135deg, hsl(270 25% 55%), hsl(200 30% 45%));
-    --mood-neutral: linear-gradient(135deg, hsl(150 8% 60%), hsl(150 8% 45%));
+    /* Mood-specific gradients - dark mode - Pastel colors */
+    --mood-happy: linear-gradient(135deg, hsl(50 50% 60%), hsl(142 35% 60%));
+    --mood-sad: linear-gradient(135deg, hsl(210 40% 60%), hsl(220 35% 55%));
+    --mood-exciting: linear-gradient(135deg, hsl(340 50% 60%), hsl(30 60% 55%));
+    --mood-nervous: linear-gradient(135deg, hsl(270 35% 60%), hsl(200 40% 55%));
+    --mood-neutral: linear-gradient(135deg, hsl(150 15% 65%), hsl(150 15% 55%));
 
     --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 100%;

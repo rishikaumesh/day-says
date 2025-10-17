@@ -103,11 +103,8 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
   const getGradientIntensity = (count: number, mood: string) => {
     if (count === 0) return '';
     const baseClass = getMoodGradientClass(mood);
-    if (count === 1) return `${baseClass} opacity-30`;
-    if (count === 2) return `${baseClass} opacity-50`;
-    if (count === 3) return `${baseClass} opacity-70`;
-    if (count === 4) return `${baseClass} opacity-85`;
-    return `${baseClass} opacity-100`; // 5 or more
+    // Equal opacity for all days with entries
+    return baseClass;
   };
 
 
@@ -178,16 +175,13 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
                       className={`
                         aspect-square rounded-lg p-1 sm:p-2 text-sm transition-all duration-300 relative min-h-[48px] sm:min-h-0
                         ${dayEntries.length > 0 ? `${getGradientIntensity(dayEntries.length, firstEntry!.mood)} hover:opacity-90 cursor-pointer hover:scale-110 hover:shadow-lg` : "bg-muted/30"}
-                        ${isToday ? "ring-2 ring-primary" : ""}
+                        ${isToday ? "scale-110 ring-2 ring-primary" : ""}
                       `}
                       disabled={!firstEntry}
                     >
-                      <div className={`text-xs mb-0 sm:mb-1 ${dayEntries.length > 2 ? 'text-green-900 dark:text-green-100' : 'text-muted-foreground'}`}>
+                      <div className="text-xs font-medium text-foreground">
                         {format(date, "d")}
                       </div>
-                      {firstEntry && (
-                        <div className="text-xl sm:text-2xl">{moodEmojis[firstEntry.mood]}</div>
-                      )}
                     </button>
                   </DialogTrigger>
 
