@@ -4,6 +4,16 @@ Your personal **AI-powered journaling companion** for daily reflection and emoti
 
 DaySays is a modern web application that helps you **track your daily moods**, **reflect on your experiences**, and **gain insights into your emotional patterns**. With AI-powered mood analysis and personalized feedback, journaling becomes effortless and meaningful.
 
+## 🎥 Live Demo 
+
+<video src="https://github.com/rishikaumesh/day-says/raw/main/demo-video.mp4" 
+       controls 
+       autoplay 
+       muted 
+       loop 
+       width="600">
+</video>
+
 ---
 
 ## ✨ Features
