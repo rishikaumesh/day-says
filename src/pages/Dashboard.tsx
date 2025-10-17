@@ -22,6 +22,7 @@ const Dashboard = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [entries, setEntries] = useState<any[]>([]);
+  const [profileName, setProfileName] = useState<string>('');
   const [lastAIResponse, setLastAIResponse] = useState<{
     mood: string;
     response: string;
@@ -36,8 +37,23 @@ const Dashboard = () => {
   useEffect(() => {
     if (user) {
       loadEntries();
+      loadProfileName();
     }
   }, [user]);
+
+  const loadProfileName = async () => {
+    if (!user) return;
+    
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name')
+      .eq('id', user.id)
+      .single();
+    
+    if (profile?.name) {
+      setProfileName(profile.name);
+    }
+  };
 
   const loadEntries = async () => {
     if (!user) return;
@@ -195,7 +211,7 @@ const Dashboard = () => {
               Mind Mirror 🪞
             </h1>
             <p className="text-lg text-muted-foreground">
-              Welcome back, {user?.user_metadata?.name || 'there'}!
+              Welcome back, {profileName || user?.user_metadata?.name || 'there'}!
             </p>
           </div>
           <div className="flex gap-2">
