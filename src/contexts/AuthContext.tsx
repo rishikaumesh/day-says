@@ -10,6 +10,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, name?: string) => Promise<{ error: any }>;
   signInWithGoogle: () => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<{ error: any }>;
   loading: boolean;
 }
 
@@ -78,8 +79,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     navigate('/auth');
   };
 
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth`,
+    });
+    return { error };
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, signIn, signUp, signInWithGoogle, signOut, loading }}>
+    <AuthContext.Provider value={{ user, session, signIn, signUp, signInWithGoogle, signOut, resetPassword, loading }}>
       {children}
     </AuthContext.Provider>
   );

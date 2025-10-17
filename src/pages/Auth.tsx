@@ -6,8 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar } from 'lucide-react';
+import { Calendar, Eye, EyeOff } from 'lucide-react';
 import { z } from 'zod';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 const authSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -20,7 +28,10 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp, signInWithGoogle, user } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const { signIn, signUp, signInWithGoogle, resetPassword, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -107,6 +118,43 @@ const Auth = () => {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const emailSchema = z.string().email('Invalid email address');
+      emailSchema.parse(resetEmail);
+      
+      const { error } = await resetPassword(resetEmail);
+      
+      if (error) {
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Reset link sent!',
+          description: 'Check your email for a password reset link.',
+        });
+        setResetDialogOpen(false);
+        setResetEmail('');
+      }
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        toast({
+          title: 'Validation Error',
+          description: err.errors[0].message,
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 flex items-center justify-center px-3 sm:px-4 py-8">
       <div className="w-full max-w-md">
@@ -140,16 +188,66 @@ const Auth = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="login-password" className="text-base">Password</Label>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    className="min-h-[44px] text-base"
-                  />
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="login-password" className="text-base">Password</Label>
+                    <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+                      <DialogTrigger asChild>
+                        <button
+                          type="button"
+                          className="text-xs sm:text-sm text-primary hover:underline"
+                        >
+                          Forgot password?
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Reset Password</DialogTitle>
+                          <DialogDescription>
+                            Enter your email address and we'll send you a link to reset your password.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleResetPassword} className="space-y-4">
+                          <div>
+                            <Label htmlFor="reset-email" className="text-base">Email</Label>
+                            <Input
+                              id="reset-email"
+                              type="email"
+                              value={resetEmail}
+                              onChange={(e) => setResetEmail(e.target.value)}
+                              placeholder="you@example.com"
+                              required
+                              className="min-h-[44px] text-base"
+                            />
+                          </div>
+                          <Button
+                            type="submit"
+                            className="w-full min-h-[48px] text-base font-semibold"
+                            disabled={loading}
+                          >
+                            {loading ? 'Sending...' : 'Send Reset Link'}
+                          </Button>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="login-password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      className="min-h-[44px] text-base pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
                 </div>
                 <Button 
                   type="submit" 
@@ -225,15 +323,24 @@ const Auth = () => {
                 </div>
                 <div>
                   <Label htmlFor="signup-password" className="text-base">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    className="min-h-[44px] text-base"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="signup-password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      className="min-h-[44px] text-base pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
                   <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                     Minimum 8 characters
                   </p>
