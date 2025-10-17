@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 interface JournalEntry {
   id: string;
   entry_date: string;
@@ -89,26 +88,13 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
     return dateEntries.length > 0 ? dateEntries[0] : null;
   };
 
-  const getMoodGradient = (mood: string) => {
-    const gradients: Record<string, string> = {
-      happy: 'bg-gradient-to-br from-green-300 to-green-500 dark:from-green-700 dark:to-green-500',
-      sad: 'bg-gradient-to-br from-blue-300 to-blue-500 dark:from-blue-700 dark:to-blue-500',
-      exciting: 'bg-gradient-to-br from-orange-300 to-orange-500 dark:from-orange-700 dark:to-orange-500',
-      nervous: 'bg-gradient-to-br from-yellow-300 to-yellow-500 dark:from-yellow-700 dark:to-yellow-500',
-      neutral: 'bg-gradient-to-br from-gray-300 to-gray-500 dark:from-gray-700 dark:to-gray-500',
-    };
-    return gradients[mood] || gradients.neutral;
-  };
-
-  const getGreenShade = (count: number, mood?: string) => {
+  const getGreenShade = (count: number) => {
     if (count === 0) return '';
-    if (mood) return getMoodGradient(mood);
-    // Fallback if no mood available
     if (count === 1) return 'bg-green-100 dark:bg-green-950';
     if (count === 2) return 'bg-green-200 dark:bg-green-900';
     if (count === 3) return 'bg-green-300 dark:bg-green-800';
     if (count === 4) return 'bg-green-400 dark:bg-green-700';
-    return 'bg-green-500 dark:bg-green-600';
+    return 'bg-green-500 dark:bg-green-600'; // 5 or more
   };
 
 
@@ -155,13 +141,9 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
               const dayEntries = getEntriesForDate(date);
               const firstEntry = dayEntries.length > 0 ? dayEntries[0] : null;
               const isToday = isSameDay(date, new Date());
-              const entryPreview = firstEntry ? firstEntry.entry_text.slice(0, 60) + '...' : null;
 
               return (
-                <TooltipProvider key={date.toISOString()} delayDuration={300}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Dialog
+                <Dialog 
                   key={date.toISOString()} 
                   onOpenChange={(open) => {
                     if (!open) {
@@ -171,40 +153,30 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
                     }
                   }}
                 >
-                        <DialogTrigger asChild>
-                          <button
-                            onClick={() => {
-                              if (dayEntries.length > 0) {
-                                setSelectedDate(date);
-                                setSelectedEntries(dayEntries);
-                                setCurrentEntryIndex(0);
-                              }
-                            }}
-                            className={`
-                              aspect-square rounded-lg p-1 sm:p-2 text-sm transition-all duration-300 relative min-h-[48px] sm:min-h-0
-                              ${dayEntries.length > 0 
-                                ? `${getGreenShade(dayEntries.length, firstEntry?.mood)} hover:opacity-90 cursor-pointer hover:scale-110 hover:shadow-lg animate-scale-in` 
-                                : "bg-muted/30 hover:bg-muted/50"}
-                              ${isToday ? "ring-2 ring-primary ring-offset-2" : ""}
-                            `}
-                            disabled={!firstEntry}
-                          >
-                            <div className={`text-xs mb-0 sm:mb-1 ${dayEntries.length > 0 ? 'text-white dark:text-white font-semibold' : 'text-muted-foreground'}`}>
-                              {format(date, "d")}
-                            </div>
-                            {firstEntry && (
-                              <div className="text-xl sm:text-2xl drop-shadow-md">{moodEmojis[firstEntry.mood]}</div>
-                            )}
-                          </button>
-                        </DialogTrigger>
-                      </Dialog>
-                    </TooltipTrigger>
-                    {entryPreview && (
-                      <TooltipContent side="top" className="max-w-[200px]">
-                        <p className="text-sm">{entryPreview}</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
+                  <DialogTrigger asChild>
+                    <button
+                      onClick={() => {
+                        if (dayEntries.length > 0) {
+                          setSelectedDate(date);
+                          setSelectedEntries(dayEntries);
+                          setCurrentEntryIndex(0);
+                        }
+                      }}
+                      className={`
+                        aspect-square rounded-lg p-1 sm:p-2 text-sm transition-all duration-300 relative min-h-[48px] sm:min-h-0
+                        ${dayEntries.length > 0 ? `${getGreenShade(dayEntries.length)} hover:opacity-80 cursor-pointer hover:scale-110` : "bg-muted/30"}
+                        ${isToday ? "ring-2 ring-primary" : ""}
+                      `}
+                      disabled={!firstEntry}
+                    >
+                      <div className={`text-xs mb-0 sm:mb-1 ${dayEntries.length > 2 ? 'text-green-900 dark:text-green-100' : 'text-muted-foreground'}`}>
+                        {format(date, "d")}
+                      </div>
+                      {firstEntry && (
+                        <div className="text-xl sm:text-2xl">{moodEmojis[firstEntry.mood]}</div>
+                      )}
+                    </button>
+                  </DialogTrigger>
 
                   {selectedEntries.length > 0 && selectedDate && (
                     <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
@@ -284,7 +256,7 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
                       </div>
                     </DialogContent>
                   )}
-                </TooltipProvider>
+                </Dialog>
               );
             })}
           </div>

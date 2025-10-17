@@ -43,13 +43,6 @@ All colors MUST be HSL.
 
     --radius: 1rem;
 
-    /* Mood gradients */
-    --gradient-happy: linear-gradient(135deg, hsl(142 32% 48%) 0%, hsl(142 40% 60%) 100%);
-    --gradient-sad: linear-gradient(135deg, hsl(220 30% 50%) 0%, hsl(220 40% 65%) 100%);
-    --gradient-exciting: linear-gradient(135deg, hsl(30 70% 55%) 0%, hsl(40 80% 65%) 100%);
-    --gradient-nervous: linear-gradient(135deg, hsl(50 60% 55%) 0%, hsl(60 70% 70%) 100%);
-    --gradient-neutral: linear-gradient(135deg, hsl(0 0% 65%) 0%, hsl(0 0% 80%) 100%);
-
     --sidebar-background: 0 0% 98%;
 
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -95,14 +88,6 @@ All colors MUST be HSL.
     --border: 150 8% 25%;
     --input: 150 8% 25%;
     --ring: 142 28% 55%;
-    
-    /* Mood gradients - dark mode */
-    --gradient-happy: linear-gradient(135deg, hsl(142 28% 55%) 0%, hsl(142 35% 45%) 100%);
-    --gradient-sad: linear-gradient(135deg, hsl(220 25% 40%) 0%, hsl(220 30% 30%) 100%);
-    --gradient-exciting: linear-gradient(135deg, hsl(30 60% 45%) 0%, hsl(40 70% 35%) 100%);
-    --gradient-nervous: linear-gradient(135deg, hsl(50 50% 45%) 0%, hsl(60 60% 35%) 100%);
-    --gradient-neutral: linear-gradient(135deg, hsl(0 0% 40%) 0%, hsl(0 0% 30%) 100%);
-    
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
