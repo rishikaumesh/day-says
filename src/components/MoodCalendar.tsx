@@ -10,6 +10,7 @@ import { getTodayLocal, parseLocalDate, isConsecutiveDay } from "@/utils/dateHel
 interface MoodCalendarProps {
   entries: JournalEntry[];
   onDeleteEntry: (id: string) => void;
+  onDateSelect: (date: Date) => void;
 }
 
 const moodEmojis: Record<string, string> = {
@@ -20,7 +21,7 @@ const moodEmojis: Record<string, string> = {
   Neutral: "😐",
 };
 
-const MoodCalendar = ({ entries, onDeleteEntry }: MoodCalendarProps) => {
+const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProps) => {
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   const [currentMonth] = useState(new Date());
 
