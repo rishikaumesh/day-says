@@ -161,14 +161,7 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
                     >
                       <div className="text-xs text-muted-foreground mb-1">{format(date, "d")}</div>
                       {firstEntry && (
-                        <>
-                          <div className="text-2xl">{moodEmojis[firstEntry.mood]}</div>
-                          {dayEntries.length > 1 && (
-                            <div className="absolute top-1 right-1 text-xs bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center">
-                              {dayEntries.length}
-                            </div>
-                          )}
-                        </>
+                        <div className="text-2xl">{moodEmojis[firstEntry.mood]}</div>
                       )}
                     </button>
                   </DialogTrigger>
