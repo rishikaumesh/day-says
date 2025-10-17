@@ -123,7 +123,7 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
             Reflect upon..
           </CardTitle>
         </CardHeader>
-        <CardContent className="px-4 sm:px-6 pt-0 pb-4 sm:pb-6">
+        <CardContent className="px-4 sm:px-6 pt-4 pb-4 sm:pb-6">
           {loadingSummary ? (
             <div className="flex items-center justify-center p-6">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
