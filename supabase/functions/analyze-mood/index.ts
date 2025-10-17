@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { journalText, userId, type, entries, personName, actionType, interactionType, prompt } = await req.json();
+    const { journalText, userId, type, entries, personName, actionType, interactionType, prompt, mood } = await req.json();
 
     // Handle message generation for both conflicts and positive interactions
     if (type === "message-generation") {
@@ -21,14 +21,57 @@ serve(async (req) => {
         throw new Error("LOVABLE_API_KEY is not configured");
       }
 
-      const systemCasualGuide = `You write one-line casual text messages to friends. Rules:
-- 10–18 words total
-- Start with "Hey" or "Hey [Name]"
-- Use 0–1 emoji max
-- Contractions are good (didn't, can't, I'm)
-- No formal phrases: regret, sincerely, apology, accountability, responsibility, disagreement, "I value our relationship", "take full responsibility"
-- No line breaks, no quotes around the message
-- Output ONLY the final message text, nothing else`;
+      // Crisis detection keywords
+      const CRISIS_KEYWORDS = [
+        "kill myself", "end my life", "want to die", "suicide", "self harm",
+        "cutting myself", "hurt myself", "no reason to live", "better off dead"
+      ];
+      
+      const journalLower = (journalText || "").toLowerCase();
+      const hasCrisisSignal = CRISIS_KEYWORDS.some(kw => journalLower.includes(kw));
+      
+      if (hasCrisisSignal) {
+        return new Response(JSON.stringify({ isCrisis: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Trim journal text to single line for context (max 200 chars)
+      const journalSnippet = (journalText || "")
+        .replace(/\n/g, " ")
+        .slice(0, 200)
+        .trim();
+
+      // Build context-aware prompt
+      const actionDescriptions: Record<string, string> = {
+        apologize: "apologize after a conflict",
+        space: "ask for space to cool off",
+        talk: "ask to talk about the conflict",
+        "share-joy": "share excitement about the good time",
+        "plan-hangout": "suggest hanging out again",
+        "thank": "thank them for the time together"
+      };
+
+      const contextPrompt = `Context:
+- Person's name: ${personName}
+- Journal entry: "${journalSnippet}"
+- Current mood: ${mood}
+- Interaction: ${interactionType}
+- Intent: ${actionDescriptions[actionType] || actionType}
+
+CRITICAL RULES:
+1. Do NOT copy any template or stock sentence you have seen before
+2. Write a FRESH, UNIQUE line specifically for THIS exact context
+3. Reference something specific from the journal entry if possible
+4. Match the mood (${mood}) in your tone
+5. 10-18 words total, 0-1 emoji max
+6. Start with "Hey", "Heyy", or "Hey ${personName}"
+7. Use casual contractions (didn't, can't, I'm)
+8. NO formal words: regret, sincerely, apology, accountability, responsibility, disagreement, "I value our relationship"
+9. NO questions, NO line breaks
+10. Output ONLY the final message text, nothing else
+
+Write one casual text message to ${personName}:`;
 
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -38,11 +81,8 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
-          messages: [
-            { role: "system", content: systemCasualGuide },
-            { role: "user", content: prompt }
-          ],
-          temperature: 0.8,
+          messages: [{ role: "user", content: contextPrompt }],
+          temperature: 0.9, // Higher creativity for variety
         }),
       });
 
@@ -51,7 +91,10 @@ serve(async (req) => {
       }
 
       const data = await response.json();
-      const message = data.choices?.[0]?.message?.content?.trim();
+      let message = data.choices?.[0]?.message?.content?.trim() || "";
+      
+      // Clean up any quotes or prefixes
+      message = message.replace(/^["']|["']$/g, "").replace(/^Message:\s*/i, "").trim();
 
       return new Response(JSON.stringify({ message }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

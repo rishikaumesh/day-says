@@ -34,6 +34,8 @@ const Dashboard = () => {
   const [conflictData, setConflictData] = useState<{
     personName: string;
     interactionType: "conflict" | "positive";
+    journalText: string;
+    mood: string;
   } | null>(null);
   const [showConflictModal, setShowConflictModal] = useState(false);
   const [sendMessageData, setSendMessageData] = useState<{
@@ -179,7 +181,7 @@ const Dashboard = () => {
       setShowResponseModal(true);
 
       // Check for conflicts (run in parallel, don't block success)
-      detectConflict(journalText);
+      detectConflict(journalText, mood);
 
       setJournalText("");
       setManualMood(undefined);
@@ -204,7 +206,7 @@ const Dashboard = () => {
     }
   };
 
-  const detectConflict = async (text: string) => {
+  const detectConflict = async (text: string, detectedMood: string) => {
     try {
       const { data, error } = await supabase.functions.invoke('analyze-mood', {
         body: { 
@@ -222,7 +224,9 @@ const Dashboard = () => {
       if ((data?.hasConflict || data?.hasPositive) && data?.personName) {
         setConflictData({ 
           personName: data.personName,
-          interactionType: data.hasConflict ? "conflict" : "positive"
+          interactionType: data.hasConflict ? "conflict" : "positive",
+          journalText: text,
+          mood: detectedMood
         });
       }
     } catch (error) {
@@ -400,6 +404,8 @@ const Dashboard = () => {
         <ConflictResolutionModal
           personName={conflictData.personName}
           interactionType={conflictData.interactionType}
+          journalText={conflictData.journalText}
+          mood={conflictData.mood}
           isOpen={showConflictModal}
           onClose={() => {
             setShowConflictModal(false);

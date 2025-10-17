@@ -17,6 +17,8 @@ interface ConflictResolutionModalProps {
   isOpen: boolean;
   onClose: () => void;
   interactionType: "conflict" | "positive";
+  journalText: string;
+  mood: string;
 }
 
 const CONFLICT_ACTIONS = [
@@ -36,6 +38,8 @@ export const ConflictResolutionModal = ({
   isOpen,
   onClose,
   interactionType,
+  journalText,
+  mood,
 }: ConflictResolutionModalProps) => {
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [generatedMessage, setGeneratedMessage] = useState<string>("");
@@ -48,31 +52,29 @@ export const ConflictResolutionModal = ({
     setSelectedAction(actionId);
 
     try {
-      const conflictPrompts: Record<string, string> = {
-        apologize: `Write 1 short text to ${personName} after a fight. Super casual, friendly, 10–18 words. Start with 'Hey' or 'Hey ${personName}'. Use 0–1 emoji. Avoid formal words/phrases: regret, responsibility, disagreement, sincerely, apology, accountability, 'I value our relationship'. Example vibe: 'Hey ${personName}, sorry about earlier — didn't mean for it to blow up 😅'. Output only the message.`,
-        space: `Write 1 short text to ${personName} saying you need a little space to cool off and you'll talk later. Super casual, 10–18 words. Start with Hey. 0–1 emoji. Avoid formal words. Output only the message.`,
-        talk: `Write 1 short text to ${personName} asking to chat later today or tomorrow. Chill, open tone, 10–18 words. Start with Hey. 0–1 emoji. Avoid formal words. Output only the message.`,
-      };
-
-      const positivePrompts: Record<string, string> = {
-        "share-joy": `Write 1 short text to ${personName} sharing good vibes from today. Warm, playful, 10–18 words. Start with Hey. 0–1 emoji. Output only the message.`,
-        "plan-hangout": `Write 1 short text to ${personName} to meet again soon. Fun, casual, 10–18 words. Start with Hey. 0–1 emoji. Output only the message.`,
-        "thank": `Write 1 short text to ${personName} to say thanks for today. Warm, casual, 10–18 words. Start with Hey. 0–1 emoji. Output only the message.`,
-      };
-
-      const prompts = interactionType === "conflict" ? conflictPrompts : positivePrompts;
-
       const { data, error } = await supabase.functions.invoke("analyze-mood", {
         body: {
           type: "message-generation",
           personName,
           actionType: actionId,
           interactionType,
-          prompt: prompts[actionId],
+          journalText,
+          mood,
         },
       });
 
       if (error) throw error;
+      
+      if (data?.isCrisis) {
+        toast({
+          title: "We're Here For You",
+          description: "It looks like you might be going through a tough time. Please reach out to a trusted friend or professional for support.",
+          variant: "default",
+        });
+        onClose();
+        return;
+      }
+
       if (!data?.message) throw new Error("Failed to generate message");
 
       setGeneratedMessage(data.message);
@@ -83,6 +85,12 @@ export const ConflictResolutionModal = ({
         description: error.message || "Couldn't generate message. Please try again.",
         variant: "destructive",
       });
+      // Set a safe fallback
+      const fallback = interactionType === "conflict" 
+        ? `Hey ${personName}, sorry about earlier 💭`
+        : `Hey ${personName}! Had such a great time today 💚`;
+      setGeneratedMessage(fallback);
+      setEditedMessage(fallback);
     } finally {
       setIsGenerating(false);
     }
