@@ -2,34 +2,33 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { journalText, userId, type, entries } = await req.json();
-    
-    if (type === 'weekly-reflection') {
+
+    if (type === "weekly-reflection") {
       // Weekly reflection analysis
       if (!entries || entries.length === 0) {
-        return new Response(
-          JSON.stringify({ suggestions: [] }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return new Response(JSON.stringify({ suggestions: [] }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
 
-      const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
       if (!LOVABLE_API_KEY) {
-        throw new Error('LOVABLE_API_KEY is not configured');
+        throw new Error("LOVABLE_API_KEY is not configured");
       }
 
-      const entriesSummary = entries.map((e: any) => `${e.entry_date}: ${e.entry_text} (Mood: ${e.mood})`).join('\n\n');
-      
+      const entriesSummary = entries.map((e: any) => `${e.entry_date}: ${e.entry_text} (Mood: ${e.mood})`).join("\n\n");
+
       const weeklyPrompt = `You are a supportive life coach analyzing someone's journal entries from the past week. Provide a brief, warm reflection on their week in 2-3 sentences that captures the essence of their emotional journey and offers one actionable insight.
 
 Journal entries from the past week:
@@ -40,15 +39,15 @@ Keep it concise and uplifting. Return ONLY valid JSON in this exact format:
   "summary": "Your week showed a mix of highs and lows, with moments of excitement balanced by some stress. Consider taking more breaks between intense activities to maintain your energy and positivity."
 }`;
 
-      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-        method: 'POST',
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
-          messages: [{ role: 'user', content: weeklyPrompt }],
+          model: "google/gemini-2.5-flash",
+          messages: [{ role: "user", content: weeklyPrompt }],
           temperature: 0.7,
         }),
       });
@@ -59,34 +58,34 @@ Keep it concise and uplifting. Return ONLY valid JSON in this exact format:
 
       const data = await response.json();
       const content = data.choices?.[0]?.message?.content;
-      const cleanContent = content?.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const cleanContent = content
+        ?.replace(/```json\n?/g, "")
+        .replace(/```\n?/g, "")
+        .trim();
       const result = JSON.parse(cleanContent || '{"suggestions":[]}');
 
-      return new Response(
-        JSON.stringify(result),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify(result), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    
+
     if (!journalText || journalText.trim().length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'Journal text is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: "Journal text is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log('Analyzing mood for journal entry...');
+    console.log("Analyzing mood for journal entry...");
 
-    let systemPrompt = `You are an empathetic journaling companion. Analyze the emotional tone of journal entries and provide a gentle, actionable suggestion.
+    let systemPrompt = `You are an empathetic journaling companion. Analyze the emotional tone of journal entries and provide a gentle, actionable suggestion, do not ask questions.
 
 Your task:
 1. Classify the mood into EXACTLY one of: happy, sad, exciting, nervous, neutral
-2. Provide a 1-2 sentence actionable suggestion that helps them based on their feelings (NOT a question)
+2. Provide a 1-2 sentence actionable suggestion that helps them based on their feelings. Do Not end the suggestion with a question.
 
 CRITICAL: You MUST respond with ONLY valid JSON in this exact format:
 {
@@ -98,69 +97,81 @@ Do not include any text before or after the JSON. The mood must be lowercase and
 
     if (userId) {
       try {
-        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-        
-        console.log('Fetching user personalization data for:', userId);
-        
-        const profileResponse = await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}&select=name,journaling_goals`, {
-          headers: {
-            'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+        console.log("Fetching user personalization data for:", userId);
+
+        const profileResponse = await fetch(
+          `${supabaseUrl}/rest/v1/profiles?id=eq.${userId}&select=name,journaling_goals`,
+          {
+            headers: {
+              apikey: supabaseKey,
+              Authorization: `Bearer ${supabaseKey}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
         if (!profileResponse.ok) {
-          console.error('Profile fetch error:', await profileResponse.text());
+          console.error("Profile fetch error:", await profileResponse.text());
         }
-        
+
         const profiles = await profileResponse.json();
         const profile = profiles?.[0];
-        console.log('Profile:', profile);
+        console.log("Profile:", profile);
 
-        const interestsResponse = await fetch(`${supabaseUrl}/rest/v1/user_interests?user_id=eq.${userId}&select=interest`, {
-          headers: {
-            'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        const interestsResponse = await fetch(
+          `${supabaseUrl}/rest/v1/user_interests?user_id=eq.${userId}&select=interest`,
+          {
+            headers: {
+              apikey: supabaseKey,
+              Authorization: `Bearer ${supabaseKey}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
         const interests = await interestsResponse.json();
-        console.log('Interests:', interests);
+        console.log("Interests:", interests);
 
-        const habitsResponse = await fetch(`${supabaseUrl}/rest/v1/user_habits?user_id=eq.${userId}&select=description,time_preference,location_preference`, {
-          headers: {
-            'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        const habitsResponse = await fetch(
+          `${supabaseUrl}/rest/v1/user_habits?user_id=eq.${userId}&select=description,time_preference,location_preference`,
+          {
+            headers: {
+              apikey: supabaseKey,
+              Authorization: `Bearer ${supabaseKey}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
         const habits = await habitsResponse.json();
-        console.log('Habits:', habits);
+        console.log("Habits:", habits);
 
         // Fetch mood signatures (learned patterns)
-        const signaturesResponse = await fetch(`${supabaseUrl}/rest/v1/mood_signatures?user_id=eq.${userId}&select=phrase,associated_mood,confidence_score&order=confidence_score.desc&limit=20`, {
-          headers: {
-            'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        const signaturesResponse = await fetch(
+          `${supabaseUrl}/rest/v1/mood_signatures?user_id=eq.${userId}&select=phrase,associated_mood,confidence_score&order=confidence_score.desc&limit=20`,
+          {
+            headers: {
+              apikey: supabaseKey,
+              Authorization: `Bearer ${supabaseKey}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
         const signatures = await signaturesResponse.json();
-        console.log('Mood signatures:', signatures);
+        console.log("Mood signatures:", signatures);
 
         if (profile || interests.length > 0 || habits.length > 0 || signatures.length > 0) {
-          const name = profile?.name || 'there';
-          const interestsList = interests.map((i: any) => i.interest).join(', ');
-          const habitsList = habits.map((h: any) => h.description).join(', ');
-          
+          const name = profile?.name || "there";
+          const interestsList = interests.map((i: any) => i.interest).join(", ");
+          const habitsList = habits.map((h: any) => h.description).join(", ");
+
           // Build mood signature context
-          let signatureContext = '';
+          let signatureContext = "";
           if (signatures.length > 0) {
-            const signatureLines = signatures.map((s: any) => 
-              `- "${s.phrase}" → ${s.associated_mood} (confidence: ${s.confidence_score})`
-            ).join('\n');
+            const signatureLines = signatures
+              .map((s: any) => `- "${s.phrase}" → ${s.associated_mood} (confidence: ${s.confidence_score})`)
+              .join("\n");
             signatureContext = `\n\nLEARNED MOOD PATTERNS FOR ${name.toUpperCase()}:
 Based on their past entries, here are phrases/activities and their typical associated moods:
 ${signatureLines}
@@ -171,8 +182,8 @@ Use these patterns to better understand their emotional tone. For example, if th
           systemPrompt = `You are an empathetic AI companion for ${name}. 
 
 PERSONALIZATION CONTEXT:
-${interestsList ? `Their interests: ${interestsList}` : ''}
-${habitsList ? `Things that help them feel better: ${habitsList}` : ''}${signatureContext}
+${interestsList ? `Their interests: ${interestsList}` : ""}
+${habitsList ? `Things that help them feel better: ${habitsList}` : ""}${signatureContext}
 
 IMPORTANT: Provide actionable suggestions (NOT questions) based on their mood. When they're feeling down, sad, stressed, or need comfort, ACTIVELY SUGGEST activities from their interests and habits. Be specific and personal!
 
@@ -188,31 +199,31 @@ Return JSON format:
   "mood": "happy",
   "response": "Playing Valorant sounds exciting, ${name}! Hope you had some great matches 🎮"
 }`;
-          
-          console.log('Using personalized prompt for:', name);
+
+          console.log("Using personalized prompt for:", name);
         }
       } catch (error) {
-        console.error('Error fetching user context:', error);
+        console.error("Error fetching user context:", error);
       }
     }
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: "google/gemini-2.5-flash",
         messages: [
           {
-            role: 'system',
-            content: systemPrompt
+            role: "system",
+            content: systemPrompt,
           },
           {
-            role: 'user',
-            content: journalText
-          }
+            role: "user",
+            content: journalText,
+          },
         ],
         temperature: 0.7,
       }),
@@ -220,77 +231,77 @@ Return JSON format:
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI gateway error:', response.status, errorText);
-      
+      console.error("AI gateway error:", response.status, errorText);
+
       if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again in a moment.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
-      
+
       if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'AI usage limit reached. Please add credits to continue.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return new Response(JSON.stringify({ error: "AI usage limit reached. Please add credits to continue." }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
-      
+
       throw new Error(`AI gateway error: ${response.status}`);
     }
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content;
-    
+
     if (!content) {
-      throw new Error('No response from AI');
+      throw new Error("No response from AI");
     }
 
-    console.log('Raw AI response:', content);
+    console.log("Raw AI response:", content);
 
     // Try to parse the JSON response
     let result;
     try {
       // Clean up the response - remove markdown code blocks if present
       const cleanContent = content
-        .replace(/```json\n?/g, '')
-        .replace(/```\n?/g, '')
+        .replace(/```json\n?/g, "")
+        .replace(/```\n?/g, "")
         .trim();
-      
+
       result = JSON.parse(cleanContent);
     } catch (parseError) {
-      console.error('Failed to parse AI response:', content);
+      console.error("Failed to parse AI response:", content);
       // Return a fallback response
       return new Response(
         JSON.stringify({
-          mood: 'neutral',
-          response: 'Thank you for sharing. Your feelings are valid.'
+          mood: "neutral",
+          response: "Thank you for sharing. Your feelings are valid.",
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     // Validate the response has required fields
     if (!result.mood || !result.response) {
-      throw new Error('Invalid response format from AI');
+      throw new Error("Invalid response format from AI");
     }
 
     // Validate mood is one of the expected values (lowercase to match database enum)
-    const validMoods = ['happy', 'sad', 'exciting', 'nervous', 'neutral'];
+    const validMoods = ["happy", "sad", "exciting", "nervous", "neutral"];
     if (!validMoods.includes(result.mood.toLowerCase())) {
-      result.mood = 'neutral';
+      result.mood = "neutral";
     } else {
       result.mood = result.mood.toLowerCase();
     }
 
-    console.log('Successfully analyzed mood:', result);
+    console.log("Successfully analyzed mood:", result);
 
     // Update mood signatures (learn from this entry)
     if (userId && journalText) {
       try {
-        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-        
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
         // Extract key phrases (simple approach: split by common delimiters and take meaningful words)
         const phrases = journalText
           .toLowerCase()
@@ -298,84 +309,83 @@ Return JSON format:
           .map((p: string) => p.trim())
           .filter((p: string) => p.length > 3 && p.length < 50)
           .slice(0, 5); // Limit to 5 phrases per entry
-        
-        console.log('Extracting phrases for mood learning:', phrases);
-        
+
+        console.log("Extracting phrases for mood learning:", phrases);
+
         // Update or insert mood signatures
         for (const phrase of phrases) {
           // Try to update existing signature
-          const updateResponse = await fetch(`${supabaseUrl}/rest/v1/mood_signatures?user_id=eq.${userId}&phrase=eq.${encodeURIComponent(phrase)}`, {
-            method: 'PATCH',
-            headers: {
-              'apikey': supabaseKey,
-              'Authorization': `Bearer ${supabaseKey}`,
-              'Content-Type': 'application/json',
-              'Prefer': 'return=minimal'
+          const updateResponse = await fetch(
+            `${supabaseUrl}/rest/v1/mood_signatures?user_id=eq.${userId}&phrase=eq.${encodeURIComponent(phrase)}`,
+            {
+              method: "PATCH",
+              headers: {
+                apikey: supabaseKey,
+                Authorization: `Bearer ${supabaseKey}`,
+                "Content-Type": "application/json",
+                Prefer: "return=minimal",
+              },
+              body: JSON.stringify({
+                associated_mood: result.mood,
+                confidence_score: 1, // Will be incremented via SQL
+                last_seen_at: new Date().toISOString(),
+              }),
             },
-            body: JSON.stringify({
-              associated_mood: result.mood,
-              confidence_score: 1, // Will be incremented via SQL
-              last_seen_at: new Date().toISOString()
-            })
-          });
-          
+          );
+
           // If no rows updated, insert new signature
           if (updateResponse.status === 200) {
             // Increment confidence
             await fetch(`${supabaseUrl}/rest/v1/rpc/increment_confidence`, {
-              method: 'POST',
+              method: "POST",
               headers: {
-                'apikey': supabaseKey,
-                'Authorization': `Bearer ${supabaseKey}`,
-                'Content-Type': 'application/json'
+                apikey: supabaseKey,
+                Authorization: `Bearer ${supabaseKey}`,
+                "Content-Type": "application/json",
               },
               body: JSON.stringify({
                 p_user_id: userId,
-                p_phrase: phrase
-              })
+                p_phrase: phrase,
+              }),
             });
           } else {
             // Insert new signature
             await fetch(`${supabaseUrl}/rest/v1/mood_signatures`, {
-              method: 'POST',
+              method: "POST",
               headers: {
-                'apikey': supabaseKey,
-                'Authorization': `Bearer ${supabaseKey}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=minimal'
+                apikey: supabaseKey,
+                Authorization: `Bearer ${supabaseKey}`,
+                "Content-Type": "application/json",
+                Prefer: "return=minimal",
               },
               body: JSON.stringify({
                 user_id: userId,
                 phrase: phrase,
                 associated_mood: result.mood,
-                confidence_score: 1
-              })
+                confidence_score: 1,
+              }),
             });
           }
         }
-        
-        console.log('Updated mood signatures for learning');
+
+        console.log("Updated mood signatures for learning");
       } catch (signatureError) {
-        console.error('Error updating mood signatures:', signatureError);
+        console.error("Error updating mood signatures:", signatureError);
         // Don't fail the request if signature update fails
       }
     }
 
-    return new Response(
-      JSON.stringify(result),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
+    return new Response(JSON.stringify(result), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
-    console.error('Error in analyze-mood function:', error);
+    console.error("Error in analyze-mood function:", error);
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });
