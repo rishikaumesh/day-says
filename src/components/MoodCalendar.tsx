@@ -12,6 +12,7 @@ interface JournalEntry {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Trash2, Calendar } from "lucide-react";
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from "date-fns";
 import { getTodayLocal, parseLocalDate, isConsecutiveDay } from "@/utils/dateHelpers";
@@ -169,28 +170,52 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
                   }}
                 >
                   <DialogTrigger asChild>
-                    <button
-                      onClick={() => {
-                        if (dayEntries.length > 0) {
-                          setSelectedDate(date);
-                          setSelectedEntries(dayEntries);
-                          setCurrentEntryIndex(0);
-                        }
-                      }}
-                      className={`
-                        aspect-square rounded-lg p-1 sm:p-2 text-sm transition-all duration-300 relative min-h-[48px] sm:min-h-0
-                        ${dayEntries.length > 0 ? `${getGreenShade(dayEntries.length)} hover:opacity-80 cursor-pointer hover:scale-110` : "bg-muted/30"}
-                        ${isToday ? "ring-2 ring-primary" : ""}
-                      `}
-                      disabled={!firstEntry}
-                    >
-                      <div className={`text-xs mb-0 sm:mb-1 ${dayEntries.length > 2 ? 'text-green-900 dark:text-green-100' : 'text-muted-foreground'}`}>
-                        {format(date, "d")}
-                      </div>
+                    <HoverCard openDelay={300}>
+                      <HoverCardTrigger asChild>
+                        <button
+                          onClick={() => {
+                            if (dayEntries.length > 0) {
+                              setSelectedDate(date);
+                              setSelectedEntries(dayEntries);
+                              setCurrentEntryIndex(0);
+                            }
+                          }}
+                          className={`
+                            aspect-square rounded-lg p-1 sm:p-2 text-sm transition-all duration-300 relative min-h-[48px] sm:min-h-0
+                            ${dayEntries.length > 0 ? `${getGreenShade(dayEntries.length)} hover:opacity-80 cursor-pointer hover:scale-110` : "bg-muted/30"}
+                            ${isToday ? "ring-2 ring-primary" : ""}
+                          `}
+                          disabled={!firstEntry}
+                        >
+                          <div className={`text-xs mb-0 sm:mb-1 ${dayEntries.length > 2 ? 'text-green-900 dark:text-green-100' : 'text-muted-foreground'}`}>
+                            {format(date, "d")}
+                          </div>
+                          {firstEntry && (
+                            <div className="text-xl sm:text-2xl">{moodEmojis[firstEntry.mood]}</div>
+                          )}
+                        </button>
+                      </HoverCardTrigger>
                       {firstEntry && (
-                        <div className="text-xl sm:text-2xl">{moodEmojis[firstEntry.mood]}</div>
+                        <HoverCardContent className="w-80 animate-fade-in" side="top">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-2xl">{moodEmojis[firstEntry.mood]}</span>
+                              <span className="font-medium text-sm">{format(date, "MMM d, yyyy")}</span>
+                            </div>
+                            <div className="p-3 bg-accent/20 rounded-lg">
+                              <p className="text-sm text-foreground/90 italic line-clamp-3">
+                                {firstEntry.reflection}
+                              </p>
+                            </div>
+                            {dayEntries.length > 1 && (
+                              <p className="text-xs text-muted-foreground">
+                                +{dayEntries.length - 1} more {dayEntries.length === 2 ? 'entry' : 'entries'}
+                              </p>
+                            )}
+                          </div>
+                        </HoverCardContent>
                       )}
-                    </button>
+                    </HoverCard>
                   </DialogTrigger>
 
                   {selectedEntries.length > 0 && selectedDate && (
