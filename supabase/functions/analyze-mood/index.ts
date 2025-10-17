@@ -59,18 +59,18 @@ Journal entry: "${journalText}"
 
 Your job:
 1. Detect if the journal entry involves:
-   - a **conflict** (fight, argument, tension, breakup, disagreement, hurt feelings, upset with someone, etc.)
-   - a **positive/happy moment** (hanging out with someone, doing something fun, having a good time)
-2. Extract the **name of the person** mentioned (a proper noun that’s likely a name — pick the most relevant if multiple).
-3. Generate a short, **informal message** in the user’s voice that fits the tone of the entry. The message should:
+   - a conflict (fight, argument, tension, breakup, disagreement, hurt feelings, upset with someone, etc.)
+   - a positive/happy moment (hanging out with someone, doing something fun, having a good time)
+2. Extract the name of the person mentioned (a proper noun that's likely a name — pick the most relevant if multiple).
+3. Generate a short, informal message in the user's voice that fits the tone of the entry. The message should:
    - sound casual and friendly
    - not be robotic
    - reflect the vibe of the situation (e.g., warm and light if happy, soft and apologetic if conflict)
    - not include any questions (but can sound open-ended)
-   - start with the person’s name in a friendly way (e.g., “Hey”, “Heyy”, “Hey [Name]”)
+   - start with the person's name in a friendly way (e.g., "Hey", "Heyy", "Hey [Name]")
 
 CRITICAL:
-You must respond with **only valid JSON** in this exact format:
+You must respond with only valid JSON in this exact format:
 
 If conflict:
 {
@@ -86,7 +86,7 @@ If positive:
   "hasConflict": false,
   "hasPositive": true,
   "personName": "Rishika",
-  "message": "Heyy Rishika, Today was fun! Although my bank balance doesn’t think so lol, let’s hang out again soon!"
+  "message": "Heyy Rishika, Today was fun! Although my bank balance doesn't think so lol, let's hang out again soon!"
 }
 
 If neither:
@@ -96,9 +96,9 @@ If neither:
 }
 
 Guidelines:
-- The `personName` should be a single, capitalized proper noun (e.g., “Rishika”).
-- `conflictType` should be a short label like “fight”, “argument”, “tension”, “disagreement”, “breakup”.
-- The message should **match the mood**: friendly and casual, never formal or awkward.
+- The personName should be a single, capitalized proper noun (e.g., "Rishika").
+- conflictType should be a short label like "fight", "argument", "tension", "disagreement", "breakup".
+- The message should match the mood: friendly and casual, never formal or awkward.
 - Keep the tone light and natural — contractions and little jokes are fine.
 - Do not include any text before or after the JSON.
 
@@ -120,7 +120,7 @@ Entry: "Had an argument with Neha earlier."
   "hasPositive": false,
   "personName": "Neha",
   "conflictType": "argument",
-  "message": "Hey Neha. I'm really sorry about earlier, I didn’t mean for it to turn out like that."
+  "message": "Hey Neha. I'm really sorry about earlier, I didn't mean for it to turn out like that."
 }
 
 Entry: "I went shopping with Rishika and it was a great time!"
@@ -129,7 +129,7 @@ Entry: "I went shopping with Rishika and it was a great time!"
   "hasConflict": false,
   "hasPositive": true,
   "personName": "Rishika",
-  "message": "Heyy Rishika, Today was fun! Although my bank balance doesn’t think so lol, let’s hang out again soon!"
+  "message": "Heyy Rishika, Today was fun! Although my bank balance doesn't think so lol, let's hang out again soon!"
 }
 
 Entry: "Had the best boba date with Aman today."
@@ -141,7 +141,7 @@ Entry: "Had the best boba date with Aman today."
   "message": "Hey Aman, today was so good fr. My boba cravings are happy now 😎"
 }
 
-Entry: "I’m feeling low today. Didn’t really talk to anyone."
+Entry: "I'm feeling low today. Didn't really talk to anyone."
 →
 {
   "hasConflict": false,
@@ -155,7 +155,7 @@ Entry: "Me and Shreya fought again."
   "hasPositive": false,
   "personName": "Shreya",
   "conflictType": "fight",
-  "message": "Hey Shreya. I'm sorry things got tense again today, I really don’t like us fighting like this."
+  "message": "Hey Shreya. I'm sorry things got tense again today, I really don't like us fighting like this."
 }
 
 Entry: "Hung out with Aarav and the boys today, had the best laugh in a while."
@@ -263,7 +263,7 @@ Keep it concise and uplifting. Return ONLY valid JSON in this exact format:
 
     console.log("Analyzing mood for journal entry...");
 
-    let systemPrompt = `You are an empathetic journaling companion. Your role is to understand the emotional tone of a user’s journal entry and offer a thoughtful, warm, and **actionable suggestion**. 
+    let systemPrompt = `You are an empathetic journaling companion. Your role is to understand the emotional tone of a user's journal entry and offer a thoughtful, warm, and actionable suggestion. 
 You must not ask questions or break out of JSON format.
 
 Your task:
@@ -274,20 +274,20 @@ Your task:
    - "nervous": anxiety, overthinking, stress, pressure, tension, fear of outcome, feeling overwhelmed
    - "neutral": factual tone, no strong emotional weight
 
-2. Provide a **1–2 sentence actionable suggestion** that:
+2. Provide a 1–2 sentence actionable suggestion that:
    - Acknowledges their feeling gently
    - Encourages a healthy or uplifting action (e.g., self-care, grounding activity, reflection, connecting with someone)
    - Is written like a supportive friend, not a therapist
    - NEVER ends with a question
    - Avoids repeating the exact words from the user entry
-   - Can be creative and tailored — use imaginative, relatable actions (e.g., “step outside for a quick stretch,” “put on your comfort playlist,” “treat yourself to something warm and cozy”)
+   - Can be creative and tailored — use imaginative, relatable actions (e.g., "step outside for a quick stretch," "put on your comfort playlist," "treat yourself to something warm and cozy")
 
 Example triggers for each mood:
-- happy: “I loved spending time with friends.” → suggestion: “Hold on to that warm feeling. Maybe jot down a few highlights or play your favorite song to keep the joy going 🌞.”
-- sad: “I feel left out.” → suggestion: “That sounds heavy. Wrap yourself in something soft, give yourself grace, and do something gentle like reading or listening to calming music.”
-- exciting: “I can’t wait for tomorrow’s trip!” → suggestion: “That spark of excitement is gold — channel it into something fun, like packing your favorite outfit or making a small plan to celebrate 🎉.”
-- nervous: “I have a big presentation tomorrow.” / “Everything feels overwhelming.” / “I’m worried I’ll mess up.” → suggestion: “Take a few deep breaths, remind yourself how far you’ve come, and ground yourself with a comforting activity like a walk, journaling, or your favorite warm drink ☕.”
-- neutral: “I did laundry today.” → suggestion: “Even the quiet, simple moments matter. Give yourself credit for showing up today.”
+- happy: "I loved spending time with friends." → suggestion: "Hold on to that warm feeling. Maybe jot down a few highlights or play your favorite song to keep the joy going 🌞."
+- sad: "I feel left out." → suggestion: "That sounds heavy. Wrap yourself in something soft, give yourself grace, and do something gentle like reading or listening to calming music."
+- exciting: "I can't wait for tomorrow's trip!" → suggestion: "That spark of excitement is gold — channel it into something fun, like packing your favorite outfit or making a small plan to celebrate 🎉."
+- nervous: "I have a big presentation tomorrow." / "Everything feels overwhelming." / "I'm worried I'll mess up." → suggestion: "Take a few deep breaths, remind yourself how far you've come, and ground yourself with a comforting activity like a walk, journaling, or your favorite warm drink ☕."
+- neutral: "I did laundry today." → suggestion: "Even the quiet, simple moments matter. Give yourself credit for showing up today."
 
 CRITICAL:
 - You MUST respond with ONLY valid JSON in this exact format:
@@ -298,7 +298,7 @@ CRITICAL:
 
 - "mood" must be lowercase and one of the five options listed above.
 - Do not include any text before or after the JSON.
-- The "response" must be a **SUGGESTION**, not a question.
+- The "response" must be a SUGGESTION, not a question.
 `;
 
     if (userId) {
