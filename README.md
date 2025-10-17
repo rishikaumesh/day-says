@@ -1,73 +1,34 @@
-# Welcome to your Lovable project
+# 📝 DaySays
 
-## Project info
+Your personal **AI-powered journaling companion** for daily reflection and emotional wellness.
 
-**URL**: https://lovable.dev/projects/787a160a-e6a2-463c-85b3-1098124445b7
+DaySays is a modern web application that helps you **track your daily moods**, **reflect on your experiences**, and **gain insights into your emotional patterns**. With AI-powered mood analysis and personalized feedback, journaling becomes effortless and meaningful.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## ✨ Features
 
-**Use Lovable**
+### 🎯 Core Features
+- 🗒 **Daily Journal Entries** — Write or speak your thoughts with text or voice recording.  
+- 🧠 **AI Mood Analysis** — Automatic mood detection from your entries using advanced AI.  
+- 🕹 **Manual Mood Selection** — Override AI detection and choose your mood manually.  
+- 📅 **Interactive Mood Calendar** — Visualize your emotional journey over time.  
+- 👀 **Hover Previews** — Quick peek at past entries.  
+- 📖 **Detailed Entry View** — Click any date to see the full entry.  
+- 📊 **Personalized Insights** — Track mood patterns and view statistics.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/787a160a-e6a2-463c-85b3-1098124445b7) and start prompting.
+### 🤖 AI-Powered Features
+- 🪄 **Sentiment Analysis** — Intelligent mood detection from text.  
+- 💬 **Personalized Reflections** — AI-generated responses based on entries.  
+- ⚡ **Conflict Detection** — Identifies interpersonal conflicts or positive interactions.  
+- 🌿 **Smart Suggestions** — Context-aware recommendations based on your habits.
 
-Changes made via Lovable will be committed automatically to this repo.
+### 🎨 User Experience
+- ✨ Personalized onboarding with interests and habits.  
+- 🧭 Modern UI with smooth animations.  
+- 🗣 Voice recording via Web Speech API.  
+- 📆 Journal for any date (past or present).  
+- 🔐 Secure authentication with email/password.  
+- 👤 Profile management and progress tracking.
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/787a160a-e6a2-463c-85b3-1098124445b7) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+---
