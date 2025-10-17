@@ -31,16 +31,16 @@ serve(async (req) => {
     let systemPrompt = `You are an empathetic journaling companion. Analyze the emotional tone of journal entries and provide gentle, encouraging responses.
 
 Your task:
-1. Classify the mood into EXACTLY one of: Happy, Sad, Excited, Nervous, Neutral
+1. Classify the mood into EXACTLY one of: happy, sad, exciting, nervous, neutral
 2. Provide a 1-2 sentence gentle, encouraging response that acknowledges their feelings
 
 CRITICAL: You MUST respond with ONLY valid JSON in this exact format:
 {
-  "mood": "Happy",
+  "mood": "happy",
   "response": "That sounds like a wonderful moment. Try to hold on to that feeling 💛."
 }
 
-Do not include any text before or after the JSON. The mood must be one of the five options listed above.`;
+Do not include any text before or after the JSON. The mood must be lowercase and one of the five options listed above.`;
 
     if (userId) {
       try {
@@ -103,11 +103,11 @@ Examples:
 - If they enjoy walks and are stressed: "That sounds stressful, ${name}. Maybe a long walk would help clear your mind? 🚶"
 - If they like music when upset: "I hear you, ${name}. Put on your favorite music and let it soothe you 🎵"
 
-Analyze the mood (Happy/Sad/Excited/Nervous/Neutral) and provide a warm, personalized response (1-2 sentences) that references their specific interests when appropriate.
+Analyze the mood (happy/sad/exciting/nervous/neutral) and provide a warm, personalized response (1-2 sentences) that references their specific interests when appropriate.
 
 Return JSON format:
 {
-  "mood": "Sad",
+  "mood": "sad",
   "response": "I'm sorry you're having a rough day, ${name}. Maybe grab that bubble tea you love or take a walk to clear your head? 🧋"
 }`;
           
@@ -185,7 +185,7 @@ Return JSON format:
       // Return a fallback response
       return new Response(
         JSON.stringify({
-          mood: 'Neutral',
+          mood: 'neutral',
           response: 'Thank you for sharing. Your feelings are valid.'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -197,10 +197,12 @@ Return JSON format:
       throw new Error('Invalid response format from AI');
     }
 
-    // Validate mood is one of the expected values
-    const validMoods = ['Happy', 'Sad', 'Excited', 'Nervous', 'Neutral'];
-    if (!validMoods.includes(result.mood)) {
-      result.mood = 'Neutral';
+    // Validate mood is one of the expected values (lowercase to match database enum)
+    const validMoods = ['happy', 'sad', 'exciting', 'nervous', 'neutral'];
+    if (!validMoods.includes(result.mood.toLowerCase())) {
+      result.mood = 'neutral';
+    } else {
+      result.mood = result.mood.toLowerCase();
     }
 
     console.log('Successfully analyzed mood:', result);
