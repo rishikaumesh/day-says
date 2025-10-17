@@ -41,10 +41,9 @@ serve(async (req) => {
       const data = await response.json();
       const message = data.choices?.[0]?.message?.content?.trim();
 
-      return new Response(
-        JSON.stringify({ message }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ message }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Handle conflict detection
@@ -93,7 +92,10 @@ If no conflict detected:
 
       const data = await response.json();
       const content = data.choices?.[0]?.message?.content;
-      const cleanContent = content?.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      const cleanContent = content
+        ?.replace(/```json\n?/g, "")
+        .replace(/```\n?/g, "")
+        .trim();
       const result = JSON.parse(cleanContent || '{"hasConflict":false}');
 
       return new Response(JSON.stringify(result), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -166,19 +168,43 @@ Keep it concise and uplifting. Return ONLY valid JSON in this exact format:
 
     console.log("Analyzing mood for journal entry...");
 
-    let systemPrompt = `You are an empathetic journaling companion. Analyze the emotional tone of journal entries and provide a gentle, actionable suggestion, do not ask questions.
+    let systemPrompt = `You are an empathetic journaling companion. Your role is to understand the emotional tone of a user’s journal entry and offer a thoughtful, warm, and **actionable suggestion**. 
+You must not ask questions or break out of JSON format.
 
 Your task:
-1. Classify the mood into EXACTLY one of: happy, sad, exciting, nervous, neutral
-2. Provide a 1-2 sentence actionable suggestion that helps them based on their feelings. Do Not end the suggestion with a question.
+1. Classify the mood into EXACTLY one of the following:
+   - "happy": joy, gratitude, peace, contentment, lightness
+   - "sad": loneliness, disappointment, grief, feeling low
+   - "exciting": anticipation, thrill, motivation, energy
+   - "nervous": anxiety, overthinking, stress, pressure, tension, fear of outcome, feeling overwhelmed
+   - "neutral": factual tone, no strong emotional weight
 
-CRITICAL: You MUST respond with ONLY valid JSON in this exact format:
+2. Provide a **1–2 sentence actionable suggestion** that:
+   - Acknowledges their feeling gently
+   - Encourages a healthy or uplifting action (e.g., self-care, grounding activity, reflection, connecting with someone)
+   - Is written like a supportive friend, not a therapist
+   - NEVER ends with a question
+   - Avoids repeating the exact words from the user entry
+   - Can be creative and tailored — use imaginative, relatable actions (e.g., “step outside for a quick stretch,” “put on your comfort playlist,” “treat yourself to something warm and cozy”)
+
+Example triggers for each mood:
+- happy: “I loved spending time with friends.” → suggestion: “Hold on to that warm feeling. Maybe jot down a few highlights or play your favorite song to keep the joy going 🌞.”
+- sad: “I feel left out.” → suggestion: “That sounds heavy. Wrap yourself in something soft, give yourself grace, and do something gentle like reading or listening to calming music.”
+- exciting: “I can’t wait for tomorrow’s trip!” → suggestion: “That spark of excitement is gold — channel it into something fun, like packing your favorite outfit or making a small plan to celebrate 🎉.”
+- nervous: “I have a big presentation tomorrow.” / “Everything feels overwhelming.” / “I’m worried I’ll mess up.” → suggestion: “Take a few deep breaths, remind yourself how far you’ve come, and ground yourself with a comforting activity like a walk, journaling, or your favorite warm drink ☕.”
+- neutral: “I did laundry today.” → suggestion: “Even the quiet, simple moments matter. Give yourself credit for showing up today.”
+
+CRITICAL:
+- You MUST respond with ONLY valid JSON in this exact format:
 {
   "mood": "happy",
   "response": "Keep embracing these positive moments. Consider writing down what made today special so you can revisit it later 💛."
 }
 
-Do not include any text before or after the JSON. The mood must be lowercase and one of the five options listed above. The response should be a SUGGESTION, not a question.`;
+- "mood" must be lowercase and one of the five options listed above.
+- Do not include any text before or after the JSON.
+- The "response" must be a **SUGGESTION**, not a question.
+`;
 
     if (userId) {
       try {
