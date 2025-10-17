@@ -180,9 +180,6 @@ const Dashboard = () => {
       // Check for conflicts (run in parallel, don't block success)
       detectConflict(journalText);
 
-      // Extract names and intent for message sharing
-      extractNamesAndIntent(journalText, mood);
-
       setJournalText("");
       setManualMood(undefined);
       loadEntries();
