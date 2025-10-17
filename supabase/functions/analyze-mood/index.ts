@@ -57,21 +57,116 @@ serve(async (req) => {
 
 Journal entry: "${journalText}"
 
-Detect:
-1. If there's a conflict (fight, argument, disagreement, breakup, tension, upset with someone, etc.)
-2. Names of people mentioned (proper nouns that are likely names)
+Your job:
+1. Detect if the journal entry involves:
+   - a **conflict** (fight, argument, tension, breakup, disagreement, hurt feelings, upset with someone, etc.)
+   - a **positive/happy moment** (hanging out with someone, doing something fun, having a good time)
+2. Extract the **name of the person** mentioned (a proper noun that’s likely a name — pick the most relevant if multiple).
+3. Generate a short, **informal message** in the user’s voice that fits the tone of the entry. The message should:
+   - sound casual and friendly
+   - not be robotic
+   - reflect the vibe of the situation (e.g., warm and light if happy, soft and apologetic if conflict)
+   - not include any questions (but can sound open-ended)
+   - start with the person’s name in a friendly way (e.g., “Hey”, “Heyy”, “Hey [Name]”)
 
-Respond with ONLY valid JSON in this exact format:
+CRITICAL:
+You must respond with **only valid JSON** in this exact format:
+
+If conflict:
 {
   "hasConflict": true,
+  "hasPositive": false,
   "personName": "Chirag",
-  "conflictType": "argument"
+  "conflictType": "argument",
+  "message": "Hey Chirag. I'm sorry about what happened today and I think we should talk about it.."
 }
 
-If no conflict detected:
+If positive:
 {
-  "hasConflict": false
-}`;
+  "hasConflict": false,
+  "hasPositive": true,
+  "personName": "Rishika",
+  "message": "Heyy Rishika, Today was fun! Although my bank balance doesn’t think so lol, let’s hang out again soon!"
+}
+
+If neither:
+{
+  "hasConflict": false,
+  "hasPositive": false
+}
+
+Guidelines:
+- The `personName` should be a single, capitalized proper noun (e.g., “Rishika”).
+- `conflictType` should be a short label like “fight”, “argument”, “tension”, “disagreement”, “breakup”.
+- The message should **match the mood**: friendly and casual, never formal or awkward.
+- Keep the tone light and natural — contractions and little jokes are fine.
+- Do not include any text before or after the JSON.
+
+Examples:
+Entry: "I had a fight with Chirag."
+→
+{
+  "hasConflict": true,
+  "hasPositive": false,
+  "personName": "Chirag",
+  "conflictType": "fight",
+  "message": "Hey Chirag. I'm sorry about what happened today and I think we should talk about it.."
+}
+
+Entry: "Had an argument with Neha earlier."
+→
+{
+  "hasConflict": true,
+  "hasPositive": false,
+  "personName": "Neha",
+  "conflictType": "argument",
+  "message": "Hey Neha. I'm really sorry about earlier, I didn’t mean for it to turn out like that."
+}
+
+Entry: "I went shopping with Rishika and it was a great time!"
+→
+{
+  "hasConflict": false,
+  "hasPositive": true,
+  "personName": "Rishika",
+  "message": "Heyy Rishika, Today was fun! Although my bank balance doesn’t think so lol, let’s hang out again soon!"
+}
+
+Entry: "Had the best boba date with Aman today."
+→
+{
+  "hasConflict": false,
+  "hasPositive": true,
+  "personName": "Aman",
+  "message": "Hey Aman, today was so good fr. My boba cravings are happy now 😎"
+}
+
+Entry: "I’m feeling low today. Didn’t really talk to anyone."
+→
+{
+  "hasConflict": false,
+  "hasPositive": false
+}
+
+Entry: "Me and Shreya fought again."
+→
+{
+  "hasConflict": true,
+  "hasPositive": false,
+  "personName": "Shreya",
+  "conflictType": "fight",
+  "message": "Hey Shreya. I'm sorry things got tense again today, I really don’t like us fighting like this."
+}
+
+Entry: "Hung out with Aarav and the boys today, had the best laugh in a while."
+→
+{
+  "hasConflict": false,
+  "hasPositive": true,
+  "personName": "Aarav",
+  "message": "Hey Aarav, today was such a vibe 😂 good laughs fr."
+}
+`;
 
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
