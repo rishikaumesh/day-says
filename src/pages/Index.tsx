@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 const Index = () => {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -107,12 +108,21 @@ const Index = () => {
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Left Panel - Journal Input */}
           <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-xl">
-            <JournalInput onSubmit={handleSubmit} isAnalyzing={isAnalyzing} />
+            <JournalInput 
+              onSubmit={handleSubmit} 
+              isAnalyzing={isAnalyzing}
+              selectedDate={selectedDate}
+              onDateChange={setSelectedDate}
+            />
           </div>
 
           {/* Right Panel - Mood Summary */}
           <div>
-            <MoodCalendar entries={entries} onDeleteEntry={handleDeleteEntry} />
+            <MoodCalendar 
+              entries={entries} 
+              onDeleteEntry={handleDeleteEntry}
+              onDateSelect={setSelectedDate}
+            />
           </div>
         </div>
       </div>

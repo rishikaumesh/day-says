@@ -10,6 +10,7 @@ import { getTodayLocal, parseLocalDate, isConsecutiveDay } from "@/utils/dateHel
 interface MoodCalendarProps {
   entries: JournalEntry[];
   onDeleteEntry: (id: string) => void;
+  onDateSelect: (date: Date) => void;
 }
 
 const moodEmojis: Record<string, string> = {
@@ -20,7 +21,7 @@ const moodEmojis: Record<string, string> = {
   Neutral: "😐",
 };
 
-const MoodCalendar = ({ entries, onDeleteEntry }: MoodCalendarProps) => {
+const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProps) => {
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   const [currentMonth] = useState(new Date());
 
@@ -135,22 +136,21 @@ const MoodCalendar = ({ entries, onDeleteEntry }: MoodCalendarProps) => {
               const isToday = isSameDay(date, new Date());
               
               return (
-                <Dialog key={date.toISOString()} onOpenChange={(open) => !open && setSelectedEntry(null)}>
-                  <DialogTrigger asChild>
-                    <button
-                      onClick={() => firstEntry && setSelectedEntry(firstEntry)}
-                      className={`
-                        aspect-square rounded-lg p-2 text-sm transition-all duration-300 relative
-                        ${firstEntry ? 'bg-primary/10 hover:bg-primary/20 cursor-pointer hover:scale-110' : 'bg-muted/30'}
-                        ${isToday ? 'ring-2 ring-primary' : ''}
-                      `}
-                      disabled={!firstEntry}
-                    >
-                      <div className="text-xs text-muted-foreground mb-1">
-                        {format(date, 'd')}
-                      </div>
-                      {firstEntry && (
-                        <>
+                <div key={date.toISOString()}>
+                  {firstEntry ? (
+                    <Dialog onOpenChange={(open) => !open && setSelectedEntry(null)}>
+                      <DialogTrigger asChild>
+                        <button
+                          onClick={() => setSelectedEntry(firstEntry)}
+                          className={`
+                            aspect-square rounded-lg p-2 text-sm transition-all duration-300 relative w-full
+                            bg-primary/10 hover:bg-primary/20 cursor-pointer hover:scale-110
+                            ${isToday ? 'ring-2 ring-primary' : ''}
+                          `}
+                        >
+                          <div className="text-xs text-muted-foreground mb-1">
+                            {format(date, 'd')}
+                          </div>
                           <div className="text-2xl">
                             {moodEmojis[firstEntry.mood]}
                           </div>
@@ -159,47 +159,61 @@ const MoodCalendar = ({ entries, onDeleteEntry }: MoodCalendarProps) => {
                               {dayEntries.length}
                             </div>
                           )}
-                        </>
-                      )}
-                    </button>
-                  </DialogTrigger>
-                  
-                  {selectedEntry && (
-                    <DialogContent className="max-w-md">
-                      <DialogHeader>
-                        <DialogTitle className="flex items-center justify-between">
-                          <span>{format(parseLocalDate(selectedEntry.date), 'MMMM d, yyyy')}</span>
-                          <span className="text-3xl">{moodEmojis[selectedEntry.mood]}</span>
-                        </DialogTitle>
-                      </DialogHeader>
+                        </button>
+                      </DialogTrigger>
                       
-                      <div className="space-y-4">
-                        <div>
-                          <h4 className="font-medium text-sm text-muted-foreground mb-2">Your Entry</h4>
-                          <p className="text-foreground whitespace-pre-wrap">{selectedEntry.journalText}</p>
-                        </div>
-                        
-                        <div className="p-4 bg-accent/20 rounded-lg">
-                          <h4 className="font-medium text-sm text-muted-foreground mb-2">Reflection</h4>
-                          <p className="text-foreground italic">{selectedEntry.response}</p>
-                        </div>
-                        
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            onDeleteEntry(selectedEntry.id);
-                            setSelectedEntry(null);
-                          }}
-                          className="w-full"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete Entry
-                        </Button>
+                      {selectedEntry && (
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center justify-between">
+                              <span>{format(parseLocalDate(selectedEntry.date), 'MMMM d, yyyy')}</span>
+                              <span className="text-3xl">{moodEmojis[selectedEntry.mood]}</span>
+                            </DialogTitle>
+                          </DialogHeader>
+                          
+                          <div className="space-y-4">
+                            <div>
+                              <h4 className="font-medium text-sm text-muted-foreground mb-2">Your Entry</h4>
+                              <p className="text-foreground whitespace-pre-wrap">{selectedEntry.journalText}</p>
+                            </div>
+                            
+                            <div className="p-4 bg-accent/20 rounded-lg">
+                              <h4 className="font-medium text-sm text-muted-foreground mb-2">Reflection</h4>
+                              <p className="text-foreground italic">{selectedEntry.response}</p>
+                            </div>
+                            
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => {
+                                onDeleteEntry(selectedEntry.id);
+                                setSelectedEntry(null);
+                              }}
+                              className="w-full"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete Entry
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      )}
+                    </Dialog>
+                  ) : (
+                    <button
+                      onClick={() => onDateSelect(date)}
+                      className={`
+                        aspect-square rounded-lg p-2 text-sm transition-all duration-300 w-full
+                        bg-muted/30 hover:bg-muted/50 cursor-pointer hover:scale-105
+                        ${isToday ? 'ring-2 ring-primary' : ''}
+                      `}
+                      title="Click to create entry for this day"
+                    >
+                      <div className="text-xs text-muted-foreground">
+                        {format(date, 'd')}
                       </div>
-                    </DialogContent>
+                    </button>
                   )}
-                </Dialog>
+                </div>
               );
             })}
           </div>

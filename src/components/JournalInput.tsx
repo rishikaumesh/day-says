@@ -14,15 +14,28 @@ import { cn } from "@/lib/utils";
 interface JournalInputProps {
   onSubmit: (text: string, selectedDate: string, manualMood?: string) => void;
   isAnalyzing: boolean;
+  selectedDate?: Date;
+  onDateChange?: (date: Date) => void;
 }
 
-const JournalInput = ({ onSubmit, isAnalyzing }: JournalInputProps) => {
+const JournalInput = ({ onSubmit, isAnalyzing, selectedDate: externalDate, onDateChange }: JournalInputProps) => {
   const [journalText, setJournalText] = useState("");
   const [manualMood, setManualMood] = useState<string>("");
   const [isRecording, setIsRecording] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [internalDate, setInternalDate] = useState<Date>(new Date());
   const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
+  
+  // Use external date if provided, otherwise use internal state
+  const currentDate = externalDate || internalDate;
+  
+  const handleDateChange = (date: Date) => {
+    if (onDateChange) {
+      onDateChange(date);
+    } else {
+      setInternalDate(date);
+    }
+  };
 
   const startRecording = async () => {
     try {
@@ -85,11 +98,11 @@ const JournalInput = ({ onSubmit, isAnalyzing }: JournalInputProps) => {
       return;
     }
 
-    const dateString = getLocalDateString(selectedDate);
+    const dateString = getLocalDateString(currentDate);
     onSubmit(journalText, dateString, manualMood || undefined);
     setJournalText("");
     setManualMood("");
-    setSelectedDate(new Date()); // Reset to today
+    handleDateChange(new Date()); // Reset to today
   };
 
   return (
@@ -104,18 +117,18 @@ const JournalInput = ({ onSubmit, isAnalyzing }: JournalInputProps) => {
               variant="outline"
               className={cn(
                 "w-full justify-start text-left font-normal border-2",
-                !selectedDate && "text-muted-foreground"
+                !currentDate && "text-muted-foreground"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+              {currentDate ? format(currentDate, "PPP") : <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
-              selected={selectedDate}
-              onSelect={(date) => date && setSelectedDate(date)}
+              selected={currentDate}
+              onSelect={(date) => date && handleDateChange(date)}
               initialFocus
               className="p-3 pointer-events-auto"
             />
