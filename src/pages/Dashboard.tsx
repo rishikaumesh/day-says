@@ -10,7 +10,7 @@ import { format } from "date-fns";
 import { CalendarIcon, Mic, MicOff } from "lucide-react";
 import MoodCalendar from "@/components/MoodCalendar";
 import { AIResponseModal } from "@/components/AIResponseModal";
-import { SendMessageModal } from "@/components/SendMessageModal";
+import { ConflictResolutionModal } from "@/components/ConflictResolutionModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -30,13 +30,10 @@ const Dashboard = () => {
     date: string;
   } | null>(null);
   const [showResponseModal, setShowResponseModal] = useState(false);
-  const [sendMessageData, setSendMessageData] = useState<{
-    people: string[];
-    intent: "share" | "apologize" | "none";
-    mood: string | null;
-    entrySnippet: string;
+  const [conflictData, setConflictData] = useState<{
+    personName: string;
   } | null>(null);
-  const [showSendMessageModal, setShowSendMessageModal] = useState(false);
+  const [showConflictModal, setShowConflictModal] = useState(false);
   
   const { user, signOut } = useAuth();
   const { toast } = useToast();
@@ -172,29 +169,12 @@ const Dashboard = () => {
       });
       setShowResponseModal(true);
 
+      // Check for conflicts (run in parallel, don't block success)
+      detectConflict(journalText);
+
       setJournalText("");
       setManualMood(undefined);
       loadEntries();
-
-      // Extract names and intent for sharing
-      try {
-        const { data: namesData, error: namesError } = await supabase.functions.invoke('extract-names-intent', {
-          body: { journalText }
-        });
-
-        if (!namesError && namesData && namesData.people && namesData.people.length > 0 && !namesData.crisis) {
-          setSendMessageData({
-            people: namesData.people,
-            intent: namesData.intent || 'none',
-            mood: mood,
-            entrySnippet: journalText
-          });
-          setShowSendMessageModal(true);
-        }
-      } catch (namesError) {
-        console.error('Error extracting names:', namesError);
-        // Don't show error to user, just skip the share modal
-      }
 
     } catch (error: any) {
       let errorMessage = "Couldn't analyze that. Please try again.";
@@ -212,6 +192,33 @@ const Dashboard = () => {
       });
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const detectConflict = async (text: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-mood', {
+        body: { 
+          type: 'conflict-detection',
+          journalText: text 
+        }
+      });
+
+      if (error) {
+        console.error("Conflict detection error:", error);
+        return;
+      }
+
+      if (data?.hasConflict && data?.personName) {
+        // Show conflict modal after AI response modal is closed
+        setTimeout(() => {
+          setConflictData({ personName: data.personName });
+          setShowConflictModal(true);
+        }, 1000);
+      }
+    } catch (error) {
+      console.error("Failed to detect conflict:", error);
+      // Silently fail - don't block the user experience
     }
   };
 
@@ -374,14 +381,14 @@ const Dashboard = () => {
         />
       )}
 
-      {sendMessageData && (
-        <SendMessageModal
-          isOpen={showSendMessageModal}
-          onClose={() => setShowSendMessageModal(false)}
-          people={sendMessageData.people}
-          intent={sendMessageData.intent}
-          mood={sendMessageData.mood}
-          entrySnippet={sendMessageData.entrySnippet}
+      {conflictData && (
+        <ConflictResolutionModal
+          personName={conflictData.personName}
+          isOpen={showConflictModal}
+          onClose={() => {
+            setShowConflictModal(false);
+            setConflictData(null);
+          }}
         />
       )}
     </div>

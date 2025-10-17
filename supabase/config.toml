@@ -2,6 +2,3 @@ project_id = "ftzxsyumlpfxttlvbhlp"
 
 [functions.analyze-mood]
 verify_jwt = false
-
-[functions.extract-names-intent]
-verify_jwt = false
