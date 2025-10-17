@@ -61,11 +61,13 @@ Detect:
 1. If there's a conflict (fight, argument, disagreement, breakup, tension, upset with someone, etc.)
 2. If there's a positive interaction (fun time, hangout, good moment, joy)
 3. Names of people mentioned (proper nouns that are likely names)
-4. Generate a short, casual message for the person:
-   - If positive → friendly, playful, warm
-   - If conflict → soft, apologetic
+4. Generate a short, super casual message for the person (1-2 sentences max):
+   - Use how friends actually text — natural, short, with emojis
+   - If positive → playful, warm, excited vibe
+   - If conflict → apologetic but casual, not formal
    - No questions at the end
    - Start with "Hey", "Heyy", or "Hey [Name]"
+   - Examples: "Hey Chirag, sorry about earlier — didn't mean for it to blow up 😅" or "Heyy Rishika, today was such a vibe 😂 had the best time fr"
 
 Respond with ONLY valid JSON in this exact format:
 
@@ -75,7 +77,7 @@ If conflict:
   "hasPositive": false,
   "personName": "Chirag",
   "conflictType": "argument",
-  "message": "Hey Chirag. I'm sorry about what happened today and I think we should talk about it.."
+  "message": "Hey Chirag, sorry about earlier — didn't mean for it to blow up 😅"
 }
 
 If positive:
@@ -83,7 +85,7 @@ If positive:
   "hasConflict": false,
   "hasPositive": true,
   "personName": "Rishika",
-  "message": "Heyy Rishika, Today was fun! Although my bank balance doesn't think so lol, let's hang out again soon!"
+  "message": "Heyy Rishika, today was such a vibe 😂 had the best time fr"
 }
 
 If neither:
@@ -106,7 +108,7 @@ Entry: "I had a fight with Chirag."
   "hasPositive": false,
   "personName": "Chirag",
   "conflictType": "fight",
-  "message": "Hey Chirag. I'm sorry about what happened today and I think we should talk about it.."
+  "message": "Hey Chirag, sorry about earlier — didn't mean for it to blow up 😅"
 }
 
 Entry: "Had an argument with Neha earlier."
@@ -116,7 +118,7 @@ Entry: "Had an argument with Neha earlier."
   "hasPositive": false,
   "personName": "Neha",
   "conflictType": "argument",
-  "message": "Hey Neha. I'm really sorry about earlier, I didn't mean for it to turn out like that."
+  "message": "Hey Neha, really sorry about earlier, didn't mean for things to go that way 💭"
 }
 
 Entry: "I went shopping with Rishika and it was a great time!"
@@ -125,7 +127,7 @@ Entry: "I went shopping with Rishika and it was a great time!"
   "hasConflict": false,
   "hasPositive": true,
   "personName": "Rishika",
-  "message": "Heyy Rishika, Today was fun! Although my bank balance doesn't think so lol, let's hang out again soon!"
+  "message": "Heyy Rishika, shopping was so fun today! My wallet is crying tho 😂"
 }
 
 Entry: "Had the best boba date with Aman today."
@@ -134,7 +136,7 @@ Entry: "Had the best boba date with Aman today."
   "hasConflict": false,
   "hasPositive": true,
   "personName": "Aman",
-  "message": "Hey Aman, today was so good fr. My boba cravings are happy now 😎"
+  "message": "Hey Aman, boba date was so good fr 🧋 we need to do this again"
 }
 
 Entry: "Me and Shreya fought again."
@@ -144,7 +146,7 @@ Entry: "Me and Shreya fought again."
   "hasPositive": false,
   "personName": "Shreya",
   "conflictType": "fight",
-  "message": "Hey Shreya. I'm sorry things got tense again today, I really don't like us fighting like this."
+  "message": "Hey Shreya, sorry we fought again. I really hate when this happens 😔"
 }
 
 Entry: "Hung out with Aarav and the boys today, had the best laugh in a while."
@@ -153,7 +155,7 @@ Entry: "Hung out with Aarav and the boys today, had the best laugh in a while."
   "hasConflict": false,
   "hasPositive": true,
   "personName": "Aarav",
-  "message": "Hey Aarav, today was such a vibe 😂 good laughs fr."
+  "message": "Hey Aarav, today was such a vibe 😂 best laughs in a minute"
 }
 
 Entry: "I'm feeling low today. Didn't really talk to anyone."

@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Share2 } from "lucide-react";
 
 interface AIResponseModalProps {
   mood: string;
@@ -16,6 +16,8 @@ interface AIResponseModalProps {
   isOpen: boolean;
   onClose: () => void;
   onViewInCalendar: () => void;
+  onShare?: () => void;
+  hasShareOption?: boolean;
 }
 
 const getMoodEmoji = (mood: string) => {
@@ -35,7 +37,9 @@ export const AIResponseModal = ({
   date,
   isOpen,
   onClose,
-  onViewInCalendar
+  onViewInCalendar,
+  onShare,
+  hasShareOption = false
 }: AIResponseModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -58,13 +62,24 @@ export const AIResponseModal = ({
             <p className="text-foreground text-sm sm:text-base leading-relaxed">{response}</p>
           </div>
 
-          <div className="flex gap-2">
-            <Button onClick={onViewInCalendar} variant="outline" className="flex-1 min-h-[44px] text-sm sm:text-base">
-              View in Calendar
-            </Button>
-            <Button onClick={onClose} className="flex-1 min-h-[44px] text-sm sm:text-base font-semibold">
-              Close
-            </Button>
+          <div className="space-y-2">
+            {hasShareOption && onShare && (
+              <Button 
+                onClick={onShare} 
+                className="w-full min-h-[44px] text-sm sm:text-base font-semibold"
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Share with Friend
+              </Button>
+            )}
+            <div className="flex gap-2">
+              <Button onClick={onViewInCalendar} variant="outline" className="flex-1 min-h-[44px] text-sm sm:text-base">
+                View in Calendar
+              </Button>
+              <Button onClick={onClose} variant={hasShareOption ? "outline" : "default"} className="flex-1 min-h-[44px] text-sm sm:text-base font-semibold">
+                Close
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>

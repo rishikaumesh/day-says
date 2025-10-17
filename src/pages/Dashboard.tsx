@@ -218,15 +218,12 @@ const Dashboard = () => {
         return;
       }
 
-      // Handle both conflicts and positive interactions with the same modal
+      // Store conflict data for later sharing (don't auto-show modal)
       if ((data?.hasConflict || data?.hasPositive) && data?.personName) {
-        setTimeout(() => {
-          setConflictData({ 
-            personName: data.personName,
-            interactionType: data.hasConflict ? "conflict" : "positive"
-          });
-          setShowConflictModal(true);
-        }, 1000);
+        setConflictData({ 
+          personName: data.personName,
+          interactionType: data.hasConflict ? "conflict" : "positive"
+        });
       }
     } catch (error) {
       console.error("Failed to detect conflict:", error);
@@ -390,6 +387,11 @@ const Dashboard = () => {
           onViewInCalendar={() => {
             setShowResponseModal(false);
             setSelectedDate(new Date(lastAIResponse.date));
+          }}
+          hasShareOption={!!conflictData}
+          onShare={() => {
+            setShowResponseModal(false);
+            setShowConflictModal(true);
           }}
         />
       )}

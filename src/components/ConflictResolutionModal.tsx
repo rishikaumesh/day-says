@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MessageCircle, Mail, Send, Copy, RefreshCw, Loader2 } from "lucide-react";
@@ -38,6 +39,7 @@ export const ConflictResolutionModal = ({
 }: ConflictResolutionModalProps) => {
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [generatedMessage, setGeneratedMessage] = useState<string>("");
+  const [editedMessage, setEditedMessage] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
@@ -74,6 +76,7 @@ export const ConflictResolutionModal = ({
       if (!data?.message) throw new Error("Failed to generate message");
 
       setGeneratedMessage(data.message);
+      setEditedMessage(data.message);
     } catch (error: any) {
       toast({
         title: "Generation Failed",
@@ -87,7 +90,7 @@ export const ConflictResolutionModal = ({
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(generatedMessage);
+      await navigator.clipboard.writeText(editedMessage);
       toast({
         title: "Copied!",
         description: "Message copied to clipboard",
@@ -102,28 +105,29 @@ export const ConflictResolutionModal = ({
   };
 
   const shareViaWhatsApp = () => {
-    const encoded = encodeURIComponent(generatedMessage);
+    const encoded = encodeURIComponent(editedMessage);
     window.open(`https://wa.me/?text=${encoded}`, "_blank");
   };
 
   const shareViaSMS = () => {
-    const encoded = encodeURIComponent(generatedMessage);
+    const encoded = encodeURIComponent(editedMessage);
     window.location.href = `sms:?&body=${encoded}`;
   };
 
   const shareViaEmail = () => {
-    const encoded = encodeURIComponent(generatedMessage);
+    const encoded = encodeURIComponent(editedMessage);
     window.location.href = `mailto:?body=${encoded}`;
   };
 
   const shareViaTelegram = () => {
-    const encoded = encodeURIComponent(generatedMessage);
+    const encoded = encodeURIComponent(editedMessage);
     window.open(`https://t.me/share/url?url=&text=${encoded}`, "_blank");
   };
 
   const resetModal = () => {
     setSelectedAction(null);
     setGeneratedMessage("");
+    setEditedMessage("");
   };
 
   return (
@@ -171,10 +175,16 @@ export const ConflictResolutionModal = ({
                 </div>
               ) : (
                 <>
-                  <div className="bg-secondary/20 rounded-lg p-3 sm:p-4 border border-border max-h-[40vh] overflow-y-auto">
-                    <p className="text-foreground text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
-                      {generatedMessage}
-                    </p>
+                  <div className="space-y-2">
+                    <label className="text-xs sm:text-sm font-medium text-muted-foreground">
+                      Edit your message:
+                    </label>
+                    <Textarea
+                      value={editedMessage}
+                      onChange={(e) => setEditedMessage(e.target.value)}
+                      className="min-h-[100px] text-sm sm:text-base resize-none"
+                      placeholder="Your message..."
+                    />
                   </div>
 
                   <div className="space-y-3">
