@@ -159,6 +159,16 @@ const Onboarding = () => {
                     {interest}
                   </button>
                 ))}
+                {selectedInterests.filter(i => !PRESET_INTERESTS.includes(i)).map(interest => (
+                  <button
+                    key={interest}
+                    onClick={() => toggleInterest(interest)}
+                    className="px-3 sm:px-4 py-2 min-h-[44px] text-sm sm:text-base rounded-full border-2 bg-primary text-primary-foreground border-primary flex items-center gap-2"
+                  >
+                    {interest}
+                    <Check className="w-4 h-4" />
+                  </button>
+                ))}
               </div>
               <div className="flex gap-2">
                 <Input
@@ -197,6 +207,16 @@ const Onboarding = () => {
                     }`}
                   >
                     {habit}
+                  </button>
+                ))}
+                {selectedHabits.filter(h => !PRESET_HABITS.includes(h)).map(habit => (
+                  <button
+                    key={habit}
+                    onClick={() => toggleHabit(habit)}
+                    className="px-3 sm:px-4 py-2 min-h-[44px] text-sm sm:text-base rounded-full border-2 bg-primary text-primary-foreground border-primary flex items-center gap-2"
+                  >
+                    {habit}
+                    <Check className="w-4 h-4" />
                   </button>
                 ))}
               </div>
