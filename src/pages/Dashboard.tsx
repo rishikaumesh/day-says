@@ -294,8 +294,8 @@ const Dashboard = () => {
           <div className="bg-card border-2 border-border rounded-2xl p-4 sm:p-6 shadow-xl">
             <h2 className="text-xl sm:text-2xl font-bold mb-4">New Entry</h2>
             
-            <div className="space-y-4">
-              <div>
+            <div className="space-y-3">
+              <div className="space-y-1.5">
                 <Label className="text-base">Date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -317,7 +317,7 @@ const Dashboard = () => {
                 </Popover>
               </div>
 
-              <div>
+              <div className="space-y-1.5">
                 <Label className="text-base">How are you feeling today?</Label>
                 <Textarea
                   value={journalText}
@@ -345,7 +345,7 @@ const Dashboard = () => {
                 )}
               </Button>
 
-              <div>
+              <div className="space-y-1.5">
                 <Label className="text-base">Manual Mood (Optional)</Label>
                 <Select value={manualMood} onValueChange={setManualMood}>
                   <SelectTrigger className="min-h-[44px] text-base">
