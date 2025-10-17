@@ -290,19 +290,19 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <AIResponseModal
-        mood={lastAIResponse?.mood || ''}
-        response={lastAIResponse?.response || ''}
-        date={lastAIResponse?.date || ''}
-        isOpen={showResponseModal}
-        onClose={() => setShowResponseModal(false)}
-        onViewInCalendar={() => {
-          setShowResponseModal(false);
-          if (lastAIResponse?.date) {
+      {lastAIResponse && (
+        <AIResponseModal
+          mood={lastAIResponse.mood}
+          response={lastAIResponse.response}
+          date={lastAIResponse.date}
+          isOpen={showResponseModal}
+          onClose={() => setShowResponseModal(false)}
+          onViewInCalendar={() => {
+            setShowResponseModal(false);
             setSelectedDate(new Date(lastAIResponse.date));
-          }
-        }}
-      />
+          }}
+        />
+      )}
     </div>
   );
 };
