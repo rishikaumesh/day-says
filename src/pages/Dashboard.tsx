@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { CalendarIcon, Mic, MicOff } from "lucide-react";
 import MoodCalendar from "@/components/MoodCalendar";
 import { AIResponseModal } from "@/components/AIResponseModal";
+import { SendMessageModal } from "@/components/SendMessageModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -29,6 +30,13 @@ const Dashboard = () => {
     date: string;
   } | null>(null);
   const [showResponseModal, setShowResponseModal] = useState(false);
+  const [sendMessageData, setSendMessageData] = useState<{
+    people: string[];
+    intent: "share" | "apologize" | "none";
+    mood: string | null;
+    entrySnippet: string;
+  } | null>(null);
+  const [showSendMessageModal, setShowSendMessageModal] = useState(false);
   
   const { user, signOut } = useAuth();
   const { toast } = useToast();
@@ -167,6 +175,26 @@ const Dashboard = () => {
       setJournalText("");
       setManualMood(undefined);
       loadEntries();
+
+      // Extract names and intent for sharing
+      try {
+        const { data: namesData, error: namesError } = await supabase.functions.invoke('extract-names-intent', {
+          body: { journalText }
+        });
+
+        if (!namesError && namesData && namesData.people && namesData.people.length > 0 && !namesData.crisis) {
+          setSendMessageData({
+            people: namesData.people,
+            intent: namesData.intent || 'none',
+            mood: mood,
+            entrySnippet: journalText
+          });
+          setShowSendMessageModal(true);
+        }
+      } catch (namesError) {
+        console.error('Error extracting names:', namesError);
+        // Don't show error to user, just skip the share modal
+      }
 
     } catch (error: any) {
       let errorMessage = "Couldn't analyze that. Please try again.";
@@ -343,6 +371,17 @@ const Dashboard = () => {
             setShowResponseModal(false);
             setSelectedDate(new Date(lastAIResponse.date));
           }}
+        />
+      )}
+
+      {sendMessageData && (
+        <SendMessageModal
+          isOpen={showSendMessageModal}
+          onClose={() => setShowSendMessageModal(false)}
+          people={sendMessageData.people}
+          intent={sendMessageData.intent}
+          mood={sendMessageData.mood}
+          entrySnippet={sendMessageData.entrySnippet}
         />
       )}
     </div>
