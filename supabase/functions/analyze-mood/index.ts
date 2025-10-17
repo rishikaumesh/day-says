@@ -45,49 +45,76 @@ Do not include any text before or after the JSON. The mood must be one of the fi
     if (userId) {
       try {
         const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-        const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+        
+        console.log('Fetching user personalization data for:', userId);
         
         const profileResponse = await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${userId}&select=name,journaling_goals`, {
           headers: {
             'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json'
           }
         });
         
+        if (!profileResponse.ok) {
+          console.error('Profile fetch error:', await profileResponse.text());
+        }
+        
         const profiles = await profileResponse.json();
-        const profile = profiles[0];
+        const profile = profiles?.[0];
+        console.log('Profile:', profile);
 
         const interestsResponse = await fetch(`${supabaseUrl}/rest/v1/user_interests?user_id=eq.${userId}&select=interest`, {
           headers: {
             'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json'
           }
         });
         const interests = await interestsResponse.json();
+        console.log('Interests:', interests);
 
-        const habitsResponse = await fetch(`${supabaseUrl}/rest/v1/user_habits?user_id=eq.${userId}&select=description`, {
+        const habitsResponse = await fetch(`${supabaseUrl}/rest/v1/user_habits?user_id=eq.${userId}&select=description,time_preference,location_preference`, {
           headers: {
             'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json'
           }
         });
         const habits = await habitsResponse.json();
+        console.log('Habits:', habits);
 
         if (profile || interests.length > 0 || habits.length > 0) {
           const name = profile?.name || 'there';
           const interestsList = interests.map((i: any) => i.interest).join(', ');
           const habitsList = habits.map((h: any) => h.description).join(', ');
 
-          systemPrompt = `You are an empathetic AI companion for ${name}. ${interestsList ? `Their interests: ${interestsList}.` : ''} ${habitsList ? `Things that help them: ${habitsList}.` : ''} When responding, use their name naturally and suggest activities from their interests when appropriate. 
+          systemPrompt = `You are an empathetic AI companion for ${name}. 
 
-Analyze the mood and provide a warm, personalized response (1-2 sentences). Return JSON with mood (Happy/Sad/Excited/Nervous/Neutral) and response. Format:
+PERSONALIZATION CONTEXT:
+${interestsList ? `Their interests: ${interestsList}` : ''}
+${habitsList ? `Things that help them feel better: ${habitsList}` : ''}
+
+IMPORTANT: When they're feeling down, sad, stressed, or need comfort, ACTIVELY SUGGEST activities from their interests and habits. Be specific and personal!
+
+Examples:
+- If they love bubble tea and are sad: "Sorry you're feeling down, ${name}. How about treating yourself to that bubble tea you love? 🧋"
+- If they enjoy walks and are stressed: "That sounds stressful, ${name}. Maybe a long walk would help clear your mind? 🚶"
+- If they like music when upset: "I hear you, ${name}. Put on your favorite music and let it soothe you 🎵"
+
+Analyze the mood (Happy/Sad/Excited/Nervous/Neutral) and provide a warm, personalized response (1-2 sentences) that references their specific interests when appropriate.
+
+Return JSON format:
 {
-  "mood": "Happy",
-  "response": "That sounds wonderful, ${name}!"
+  "mood": "Sad",
+  "response": "I'm sorry you're having a rough day, ${name}. Maybe grab that bubble tea you love or take a walk to clear your head? 🧋"
 }`;
+          
+          console.log('Using personalized prompt for:', name);
         }
       } catch (error) {
-        console.log('Could not fetch user context, using default prompt:', error);
+        console.error('Error fetching user context:', error);
       }
     }
 

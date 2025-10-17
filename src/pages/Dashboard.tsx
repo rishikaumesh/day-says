@@ -18,6 +18,7 @@ const Dashboard = () => {
   const [journalText, setJournalText] = useState("");
   const [manualMood, setManualMood] = useState<string | undefined>();
   const [isRecording, setIsRecording] = useState(false);
+  const [recognition, setRecognition] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [entries, setEntries] = useState<any[]>([]);
@@ -52,7 +53,15 @@ const Dashboard = () => {
     }
   };
 
-  const startRecording = () => {
+  const toggleRecording = () => {
+    if (isRecording && recognition) {
+      // Stop recording
+      recognition.stop();
+      setIsRecording(false);
+      return;
+    }
+
+    // Start recording
     if (!('webkitSpeechRecognition' in window)) {
       toast({
         title: "Not Supported",
@@ -62,13 +71,13 @@ const Dashboard = () => {
       return;
     }
 
-    const recognition = new (window as any).webkitSpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
+    const newRecognition = new (window as any).webkitSpeechRecognition();
+    newRecognition.continuous = true;
+    newRecognition.interimResults = true;
 
-    recognition.onstart = () => setIsRecording(true);
-    recognition.onend = () => setIsRecording(false);
-    recognition.onerror = () => {
+    newRecognition.onstart = () => setIsRecording(true);
+    newRecognition.onend = () => setIsRecording(false);
+    newRecognition.onerror = () => {
       setIsRecording(false);
       toast({
         title: "Error",
@@ -77,7 +86,7 @@ const Dashboard = () => {
       });
     };
 
-    recognition.onresult = (event: any) => {
+    newRecognition.onresult = (event: any) => {
       let finalTranscript = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
@@ -89,7 +98,8 @@ const Dashboard = () => {
       }
     };
 
-    recognition.start();
+    setRecognition(newRecognition);
+    newRecognition.start();
   };
 
   const handleSubmit = async () => {
@@ -236,15 +246,14 @@ const Dashboard = () => {
               </div>
 
               <Button
-                onClick={startRecording}
-                variant="outline"
+                onClick={toggleRecording}
+                variant={isRecording ? "destructive" : "outline"}
                 className="w-full"
-                disabled={isRecording}
               >
                 {isRecording ? (
                   <>
                     <MicOff className="mr-2 h-4 w-4 animate-pulse" />
-                    Recording...
+                    Stop Recording
                   </>
                 ) : (
                   <>

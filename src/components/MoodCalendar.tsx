@@ -51,11 +51,12 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
 
     const moodCounts: Record<string, number> = {};
     entries.forEach((entry) => {
-      moodCounts[entry.mood] = (moodCounts[entry.mood] || 0) + 1;
+      const capitalizedMood = entry.mood.charAt(0).toUpperCase() + entry.mood.slice(1);
+      moodCounts[capitalizedMood] = (moodCounts[capitalizedMood] || 0) + 1;
     });
 
     const mostCommon = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0];
-    return mostCommon ? `${moodEmojis[mostCommon[0]]} ${mostCommon[0]}` : "Neutral";
+    return mostCommon ? `${moodEmojis[mostCommon[0]]} ${mostCommon[0]}` : `${moodEmojis.Neutral} Neutral`;
   };
 
   const currentStreak = () => {
