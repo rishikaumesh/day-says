@@ -39,30 +39,30 @@ export const AIResponseModal = ({
 }: AIResponseModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-w-[95vw] sm:max-w-md">
         <DialogHeader>
           <div className="flex items-center justify-center mb-4">
             <div className="relative">
-              <div className="text-6xl animate-scale-in">{getMoodEmoji(mood)}</div>
-              <Sparkles className="absolute -top-2 -right-2 h-6 w-6 text-primary animate-pulse" />
+              <div className="text-5xl sm:text-6xl animate-scale-in">{getMoodEmoji(mood)}</div>
+              <Sparkles className="absolute -top-2 -right-2 h-5 w-5 sm:h-6 sm:w-6 text-primary animate-pulse" />
             </div>
           </div>
-          <DialogTitle className="text-center text-2xl capitalize">Mood: {mood}</DialogTitle>
+          <DialogTitle className="text-center text-xl sm:text-2xl capitalize">Mood: {mood}</DialogTitle>
           <DialogDescription className="text-center text-sm text-muted-foreground">
             {format(new Date(date), 'MMMM d, yyyy')}
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
-          <div className="bg-secondary/20 rounded-lg p-4 border border-border">
-            <p className="text-foreground leading-relaxed">{response}</p>
+          <div className="bg-secondary/20 rounded-lg p-3 sm:p-4 border border-border max-h-[50vh] overflow-y-auto">
+            <p className="text-foreground text-sm sm:text-base leading-relaxed">{response}</p>
           </div>
 
           <div className="flex gap-2">
-            <Button onClick={onViewInCalendar} variant="outline" className="flex-1">
+            <Button onClick={onViewInCalendar} variant="outline" className="flex-1 min-h-[44px] text-sm sm:text-base">
               View in Calendar
             </Button>
-            <Button onClick={onClose} className="flex-1">
+            <Button onClick={onClose} className="flex-1 min-h-[44px] text-sm sm:text-base font-semibold">
               Close
             </Button>
           </div>
