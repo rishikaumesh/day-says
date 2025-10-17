@@ -39,11 +39,11 @@ const Insights = () => {
 
   const getMoodEmoji = (mood: string) => {
     const moods: Record<string, string> = {
-      'Happy': '😊',
-      'Sad': '😢',
-      'Excited': '🎉',
-      'Nervous': '😰',
-      'Neutral': '😐'
+      'happy': '😊',
+      'sad': '😢',
+      'exciting': '🎉',
+      'nervous': '😰',
+      'neutral': '😐'
     };
     return moods[mood] || '😐';
   };
@@ -71,7 +71,7 @@ const Insights = () => {
             <div className="bg-card border-2 border-border rounded-2xl p-6 shadow-xl">
               <h2 className="text-2xl font-bold mb-4">Most Common Mood</h2>
               <p className="text-5xl">{getMoodEmoji(mostCommonMood[0])}</p>
-              <p className="text-xl mt-2">{mostCommonMood[0]} ({mostCommonMood[1]} times)</p>
+              <p className="text-xl mt-2 capitalize">{mostCommonMood[0]} ({mostCommonMood[1]} times)</p>
             </div>
           )}
 
@@ -81,7 +81,7 @@ const Insights = () => {
               {Object.entries(moodStats).map(([mood, count]) => (
                 <div key={mood} className="flex items-center gap-3">
                   <span className="text-2xl">{getMoodEmoji(mood)}</span>
-                  <span className="font-medium w-20">{mood}</span>
+                  <span className="font-medium w-20 capitalize">{mood}</span>
                   <div className="flex-1 bg-secondary rounded-full h-4">
                     <div
                       className="bg-primary h-4 rounded-full transition-all"

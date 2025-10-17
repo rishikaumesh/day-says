@@ -20,11 +20,11 @@ interface AIResponseModalProps {
 
 const getMoodEmoji = (mood: string) => {
   const moods: Record<string, string> = {
-    'Happy': '😊',
-    'Sad': '😢',
-    'Excited': '🎉',
-    'Nervous': '😰',
-    'Neutral': '😐'
+    'happy': '😊',
+    'sad': '😢',
+    'exciting': '🎉',
+    'nervous': '😰',
+    'neutral': '😐'
   };
   return moods[mood] || '😐';
 };
@@ -47,7 +47,7 @@ export const AIResponseModal = ({
               <Sparkles className="absolute -top-2 -right-2 h-6 w-6 text-primary animate-pulse" />
             </div>
           </div>
-          <DialogTitle className="text-center text-2xl">Mood: {mood}</DialogTitle>
+          <DialogTitle className="text-center text-2xl capitalize">Mood: {mood}</DialogTitle>
           <DialogDescription className="text-center text-sm text-muted-foreground">
             {format(new Date(date), 'MMMM d, yyyy')}
           </DialogDescription>

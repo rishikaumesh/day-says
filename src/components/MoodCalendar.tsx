@@ -21,11 +21,11 @@ interface MoodCalendarProps {
 }
 
 const moodEmojis: Record<string, string> = {
-  Happy: "😊",
-  Sad: "😔",
-  Excited: "🤩",
-  Nervous: "😬",
-  Neutral: "😐",
+  happy: "😊",
+  sad: "😢",
+  exciting: "🎉",
+  nervous: "😰",
+  neutral: "😐",
 };
 
 const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProps) => {
@@ -51,12 +51,12 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
 
     const moodCounts: Record<string, number> = {};
     entries.forEach((entry) => {
-      const capitalizedMood = entry.mood.charAt(0).toUpperCase() + entry.mood.slice(1);
-      moodCounts[capitalizedMood] = (moodCounts[capitalizedMood] || 0) + 1;
+      moodCounts[entry.mood] = (moodCounts[entry.mood] || 0) + 1;
     });
 
     const mostCommon = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0];
-    return mostCommon ? `${moodEmojis[mostCommon[0]]} ${mostCommon[0]}` : `${moodEmojis.Neutral} Neutral`;
+    const capitalizedMood = mostCommon?.[0] ? mostCommon[0].charAt(0).toUpperCase() + mostCommon[0].slice(1) : "Neutral";
+    return mostCommon ? `${moodEmojis[mostCommon[0]]} ${capitalizedMood}` : `${moodEmojis.neutral} Neutral`;
   };
 
   const currentStreak = () => {
