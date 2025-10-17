@@ -90,7 +90,7 @@ const Onboarding = () => {
 
       toast({
         title: 'Welcome! ✨',
-        description: "You're all set. Let's start journaling!",
+        description: "You're all set. Let's start reflecting!",
       });
 
       navigate('/dashboard');

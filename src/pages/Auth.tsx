@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { Calendar } from 'lucide-react';
 import { z } from 'zod';
 
 const authSchema = z.object({
@@ -110,8 +111,11 @@ const Auth = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 flex items-center justify-center px-3 sm:px-4 py-8">
       <div className="w-full max-w-md">
         <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Mind Mirror 🪞</h1>
-          <p className="text-muted-foreground text-sm sm:text-base">Your personal journaling companion</p>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2 flex items-center justify-center gap-3">
+            <Calendar className="h-8 w-8 sm:h-10 sm:w-10" />
+            DaySays
+          </h1>
+          <p className="text-muted-foreground text-sm sm:text-base">Your personal reflection companion</p>
         </div>
 
         <div className="bg-card border-2 border-border rounded-2xl p-4 sm:p-8 shadow-xl">

@@ -230,12 +230,12 @@ const Profile = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="goals" className="text-base">Journaling Goals</Label>
+                <Label htmlFor="goals" className="text-base">Reflection Goals</Label>
                 <Textarea
                   id="goals"
                   value={journalingGoals}
                   onChange={(e) => setJournalingGoals(e.target.value)}
-                  placeholder="What do you hope to achieve with journaling?"
+                  placeholder="What do you hope to achieve with DaySays?"
                   className="min-h-[100px] text-base"
                 />
               </div>

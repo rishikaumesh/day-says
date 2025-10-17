@@ -102,8 +102,8 @@ const Insights = () => {
             <div className="bg-card border-2 border-border rounded-2xl p-4 sm:p-6 shadow-xl md:col-span-2">
               <h2 className="text-xl sm:text-2xl font-bold mb-4">🌟 Great Job!</h2>
               <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                You've been consistent with journaling. Keep it up! 
-                {entries.length >= 30 && " You've journaled for over a month - that's amazing! 🎉"}
+                You've been consistent with reflecting. Keep it up! 
+                {entries.length >= 30 && " You've been reflecting for over a month - that's amazing! 🎉"}
               </p>
             </div>
           )}

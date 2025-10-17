@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
-import { CalendarIcon, Mic, MicOff } from "lucide-react";
+import { CalendarIcon, Mic, MicOff, Calendar } from "lucide-react";
 import MoodCalendar from "@/components/MoodCalendar";
 import { AIResponseModal } from "@/components/AIResponseModal";
 import { ConflictResolutionModal } from "@/components/ConflictResolutionModal";
@@ -257,8 +257,9 @@ const Dashboard = () => {
         <header className="mb-6 sm:mb-12 animate-fade-in">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-1 sm:mb-2">
-                Mind Mirror 🪞
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-1 sm:mb-2 flex items-center gap-3">
+                <Calendar className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12" />
+                DaySays
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground">
                 Welcome back, {profileName || user?.user_metadata?.name || 'there'}!
@@ -308,7 +309,7 @@ const Dashboard = () => {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
-                    <Calendar
+                    <CalendarComponent
                       mode="single"
                       selected={selectedDate}
                       onSelect={(date) => date && setSelectedDate(date)}

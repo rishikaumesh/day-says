@@ -134,7 +134,7 @@ const MoodCalendar = ({ entries, onDeleteEntry, onDateSelect }: MoodCalendarProp
             </div>
           ) : (
             <div className="p-3 sm:p-4 bg-muted/30 rounded-lg text-center">
-              <p className="text-sm sm:text-base text-muted-foreground">Start journaling to get personalized reflections</p>
+              <p className="text-sm sm:text-base text-muted-foreground">Start reflecting to get personalized insights</p>
             </div>
           )}
         </CardContent>
