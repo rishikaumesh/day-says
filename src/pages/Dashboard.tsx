@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { CalendarIcon, Mic, MicOff } from "lucide-react";
 import MoodCalendar from "@/components/MoodCalendar";
 import { AIResponseModal } from "@/components/AIResponseModal";
+import { ConflictResolutionModal } from "@/components/ConflictResolutionModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -29,6 +30,10 @@ const Dashboard = () => {
     date: string;
   } | null>(null);
   const [showResponseModal, setShowResponseModal] = useState(false);
+  const [conflictData, setConflictData] = useState<{
+    personName: string;
+  } | null>(null);
+  const [showConflictModal, setShowConflictModal] = useState(false);
   
   const { user, signOut } = useAuth();
   const { toast } = useToast();
@@ -164,6 +169,9 @@ const Dashboard = () => {
       });
       setShowResponseModal(true);
 
+      // Check for conflicts (run in parallel, don't block success)
+      detectConflict(journalText);
+
       setJournalText("");
       setManualMood(undefined);
       loadEntries();
@@ -184,6 +192,33 @@ const Dashboard = () => {
       });
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const detectConflict = async (text: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-mood', {
+        body: { 
+          type: 'conflict-detection',
+          journalText: text 
+        }
+      });
+
+      if (error) {
+        console.error("Conflict detection error:", error);
+        return;
+      }
+
+      if (data?.hasConflict && data?.personName) {
+        // Show conflict modal after AI response modal is closed
+        setTimeout(() => {
+          setConflictData({ personName: data.personName });
+          setShowConflictModal(true);
+        }, 1000);
+      }
+    } catch (error) {
+      console.error("Failed to detect conflict:", error);
+      // Silently fail - don't block the user experience
     }
   };
 
@@ -342,6 +377,17 @@ const Dashboard = () => {
           onViewInCalendar={() => {
             setShowResponseModal(false);
             setSelectedDate(new Date(lastAIResponse.date));
+          }}
+        />
+      )}
+
+      {conflictData && (
+        <ConflictResolutionModal
+          personName={conflictData.personName}
+          isOpen={showConflictModal}
+          onClose={() => {
+            setShowConflictModal(false);
+            setConflictData(null);
           }}
         />
       )}
