@@ -32,3 +32,12 @@ DaySays is a modern web application that helps you **track your daily moods**, *
 - 👤 Profile management and progress tracking.
 
 ---
+
+
+https://github.com/user-attachments/assets/0a9bedb0-c9bc-48db-90ce-2ac3e8ebe96d
+
+
+
+https://github.com/user-attachments/assets/165cdef2-a6f7-442c-9690-2816c94ab2f4
+
+
